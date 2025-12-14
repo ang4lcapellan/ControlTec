@@ -46,7 +46,6 @@ import DireccionDashboard from "./pages/direccion/DireccionDashboard.jsx";
 import "./styles/global.css";
 import "./styles/layout.css";
 import "./styles/auth.css";
-import "./styles/solicitudes.css";
 
 function AppInner() {
   const location = useLocation();

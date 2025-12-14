@@ -57,7 +57,7 @@ body {
 
 .register-title {
     font-size: 1.8rem;
-    color: var(--primary-green);
+    color: #000;
     margin: 0 0 10px;
     font-weight: 700;
 }

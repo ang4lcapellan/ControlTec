@@ -1,575 +1,273 @@
 /* src/pages/vus/VusVentanilla.css */
+
 :root {
-  --vus-primary: #289c2e;
-  --vus-primary-dark: #1e7a23;
-  --vus-bg: #f9fafb;
-  --vus-text: #111827;
-  --vus-text-muted: #6b7280;
-  --vus-white: #ffffff;
-  --vus-border: #e5e7eb;
-  --vus-radius: 8px;
-  --vus-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --vs-primary: #289c2e;
+  /* Green header color */
+  --vs-bg: #f5f7fa;
+  /* Main background */
+  --vs-card-bg: #ffffff;
+  --vs-text: #333333;
+  --vs-border: #e0e0e0;
+  --vs-radius: 8px;
+  --vs-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Base Container with high specificity baseline */
+.vs-page-container {
+  padding: 2rem !important;
+  background-color: var(--vs-bg) !important;
+  min-height: calc(100vh - 64px) !important;
+  font-family: 'Segoe UI', sans-serif !important;
+  color: var(--vs-text) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2rem !important;
+}
+
+
+/* ===========================
+   TOP SECTION: SEARCH 
+   =========================== */
+.vs-page-container .vs-search-section {
+  background: var(--vs-card-bg) !important;
+  padding: 1.5rem 2rem !important;
+  border-radius: var(--vs-radius) !important;
+  box-shadow: var(--vs-shadow) !important;
+  border: 1px solid var(--vs-border) !important;
+}
+
+.vs-page-container .vs-section-title {
+  margin: 0 0 1rem 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: #1a1a1a !important;
+}
+
+.vs-page-container .vs-search-box {
+  display: flex !important;
+  gap: 1rem !important;
+  align-items: center !important;
+}
+
+.vs-page-container .vs-search-input {
+  flex: 1 !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.95rem !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 4px !important;
+  background-color: #f9fafb !important;
+  outline: none !important;
+  transition: border 0.2s !important;
+  box-shadow: none !important;
+}
+
+.vs-page-container .vs-search-input:focus {
+  border-color: var(--vs-primary) !important;
+  background-color: #ffffff !important;
 }
 
-.vus-page {
-  padding: 2rem 2rem;
-  background-color: var(--vus-bg);
-  min-height: calc(100vh - 64px);
-  font-family: 'Segoe UI', sans-serif;
+.vs-page-container .vs-search-btn {
+  background-color: var(--vs-primary) !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 4px !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: background 0.2s !important;
+  box-shadow: none !important;
 }
 
-.vus-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+.vs-page-container .vs-search-btn:hover {
+  background-color: #228627 !important;
 }
 
-.vus-title-group {
-  display: flex;
-  flex-direction: column;
-  opacity: 0;
-  animation: vusSlideInDown 0.6s ease-out forwards;
+.vs-page-container .vs-search-btn::before {
+  content: "🔍";
+  font-size: 0.9rem !important;
 }
+
+/* ===========================
+   BOTTOM SECTION: TABLE 
+   =========================== */
+.vs-page-container .vs-table-section {
+  background: var(--vs-card-bg) !important;
+  border-radius: var(--vs-radius) !important;
+  box-shadow: var(--vs-shadow) !important;
+  border: 1px solid var(--vs-border) !important;
+  padding: 1.5rem 2rem 2rem !important;
+}
 
-.vus-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0 0 0.5rem 0;
-  opacity: 0;
-  animation: vusSlideInDown 0.6s ease-out forwards;
+.vs-page-container .vs-table-header-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 1.5rem !important;
 }
 
-.vus-subtitle {
-  font-size: 0.95rem;
-  color: var(--vus-text-muted);
-  margin: 0;
-  opacity: 0;
-  animation: vusSlideInDown 0.6s ease-out forwards;
-  animation-delay: 0.05s;
+.vs-page-container .vs-pill-count {
+  background-color: #e3f2fd !important;
+  color: #1976d2 !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 1rem !important;
+  border-radius: 999px !important;
+  border: 1px solid #bbdefb !important;
 }
 
-.vus-card {
-  background-color: var(--vus-white);
-  border-radius: var(--vus-radius);
-  box-shadow: var(--vus-shadow);
-  overflow: hidden;
-  border: 1px solid var(--vus-border);
-  opacity: 0;
-  animation: vusFadeInUp 0.6s ease-out 0.4s forwards;
+.vs-page-container .vs-table-wrapper {
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--vs-border) !important;
 }
 
-.vus-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.9rem 1.25rem;
-  border-bottom: 1px solid var(--vus-border);
+.vs-page-container .vs-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  text-align: left !important;
 }
 
-.vus-card-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1a202c;
-}
-
-.vus-card-subtitle {
-  font-size: 0.95rem;
-  color: var(--vus-text-muted);
-}
-
-.vus-table-wrap {
-  width: 100%;
-  overflow-x: auto;
+/* Green Header like Mockup */
+.vs-page-container .vs-table thead {
+  background-color: var(--vs-primary) !important;
+  color: #ffffff !important;
 }
 
-.vus-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  min-width: 900px;
+.vs-page-container .vs-table th {
+  padding: 1rem 1.5rem !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.5px !important;
+  background-color: var(--vs-primary) !important;
+  /* Force bg again */
+  color: #ffffff !important;
+  border: none !important;
 }
 
-.vus-table thead {
-  background-color: var(--vus-primary);
-  color: var(--vus-white);
-}
-
-.vus-table th {
-  padding: 1rem 1.5rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-.vus-table td {
-  padding: 1rem 1.5rem;
-  color: #374151;
-  font-size: 0.9rem;
-}
-
-.vus-table tbody tr {
-  border-bottom: 1px solid var(--vus-border);
-  transition: background-color 0.1s;
-  opacity: 0;
-  animation: vusFadeInUp 0.5s ease-out forwards;
+.vs-page-container .vs-table tbody tr {
+  border-bottom: 1px solid #f0f0f0 !important;
+  transition: background 0.1s !important;
+  background-color: transparent !important;
 }
 
-.vus-table tbody tr:last-child {
-  border-bottom: none;
+.vs-page-container .vs-table tbody tr:last-child {
+  border-bottom: none !important;
 }
-
-.vus-table tbody tr:hover {
-  background-color: #f8fcf8;
+
+.vs-page-container .vs-table tbody tr:hover {
+  background-color: #f8fbff !important;
 }
 
-.vus-table tbody tr:nth-child(1) { animation-delay: 0.5s; }
-.vus-table tbody tr:nth-child(2) { animation-delay: 0.55s; }
-.vus-table tbody tr:nth-child(3) { animation-delay: 0.6s; }
-.vus-table tbody tr:nth-child(4) { animation-delay: 0.65s; }
-.vus-table tbody tr:nth-child(5) { animation-delay: 0.7s; }
-.vus-table tbody tr:nth-child(6) { animation-delay: 0.75s; }
-.vus-table tbody tr:nth-child(7) { animation-delay: 0.8s; }
-.vus-table tbody tr:nth-child(8) { animation-delay: 0.85s; }
-.vus-table tbody tr:nth-child(9) { animation-delay: 0.9s; }
-.vus-table tbody tr:nth-child(10) { animation-delay: 0.95s; }
-.vus-table tbody tr:nth-child(n+11) { animation-delay: 1s; }
+.vs-page-container .vs-table td {
+  padding: 1.25rem 1.5rem !important;
+  font-size: 0.9rem !important;
+  color: #4b5563 !important;
+  vertical-align: middle !important;
+  background-color: transparent !important;
+}
 
-.vus-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
+/* Column specifics */
+.vs-page-container .vs-col-id {
+  font-weight: 600 !important;
+  color: #374151 !important;
 }
-.vus-badge-success {
-  background-color: #dcfce7;
-  color: #166534;
+
+.vs-page-container .vs-col-servicio {
+  color: #111827 !important;
+  font-weight: 500 !important;
 }
-.vus-badge-warning {
-  background-color: #fef9c3;
-  color: #854d0e;
+
+/* Badges (Pill shape, soft colors) */
+.vs-page-container .vs-badge {
+  display: inline-block !important;
+  padding: 0.35rem 1rem !important;
+  border-radius: 999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  min-width: 80px !important;
 }
-.vus-badge-danger {
-  background-color: #fee2e2;
-  color: #991b1b;
+
+.vs-page-container .vs-badge-success {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  border: none !important;
 }
-.vus-badge-neutral {
-  background-color: #f3f4f6;
-  color: #374151;
+
+.vs-page-container .vs-badge-warning {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  border: none !important;
 }
 
-.vus-btn-secondary, .vus-btn-action {
-  background-color: var(--vus-white);
-  color: #374151;
-  border: 1px solid #d1d5db;
-  padding: 0.35rem 0.85rem;
-  border-radius: 0.375rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-.vus-btn-secondary:hover, .vus-btn-action:hover {
-  background-color: var(--vus-primary);
-  border-color: var(--vus-primary);
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.vs-page-container .vs-badge-danger {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  border: none !important;
 }
 
-.vus-loading, .vus-empty {
-  text-align: center;
-  padding: 3rem;
-  color: var(--vus-text-muted);
-}
-
-.vus-error {
-  color: #e53e3e;
-  padding: 1rem;
-  background-color: #fff5f5;
-  border: 1px solid #feb2b2;
-  border-radius: var(--vus-radius);
-  margin-bottom: 1rem;
-}
-
-@keyframes vusSlideInDown {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-@keyframes vusSlideInRight {
-  from { transform: translateX(20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes vusFadeInUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@media (max-width: 900px) {
-  .vus-page { padding: 1.5rem 1rem; }
-  .vus-table { min-width: 600px; }
-}
-
-/* Page container (similar a ms-page-container) */
-.vus-layout {
-  padding: 2rem 2rem;
-  background-color: var(--vus-bg);
-  min-height: calc(100vh - 64px);
-  font-family: "Segoe UI", sans-serif;
-}
-
-/* Header Section (si tu header usa .vus-header) */
-.vus-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-/* Si tu título está dentro de un grupo */
-.vus-title-group {
-  display: flex;
-  flex-direction: column;
-
-  /* Animation */
-  opacity: 0;
-  animation: vusSlideInDown 0.6s ease-out forwards;
-}
-
-/* Para títulos directos dentro de header */
-.vus-header h1,
-.vus-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0 0 0.5rem 0;
-
-  /* si no existe .vus-title-group */
-  opacity: 0;
-  animation: vusSlideInDown 0.6s ease-out forwards;
-}
-
-.vus-header p,
-.vus-subtitle {
-  font-size: 0.95rem;
-  color: var(--vus-text-muted);
-  margin: 0;
+.vs-page-container .vs-badge-neutral {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  border: none !important;
+}
 
-  opacity: 0;
-  animation: vusSlideInDown 0.6s ease-out forwards;
-  animation-delay: 0.05s;
+/* Actions Button (Outline/Ghost) */
+.vs-page-container .vs-btn-details {
+  background-color: transparent !important;
+  border: 1px solid #e5e7eb !important;
+  padding: 0.4rem 1rem !important;
+  border-radius: 4px !important;
+  color: #374151 !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  display: inline-block !important;
 }
 
-/* ================================
-   CARD (tabla) - igual a ms-table-container
-================================ */
-.vus-card {
-  background-color: var(--vus-white);
-  border-radius: var(--vus-radius);
-  box-shadow: var(--vus-shadow);
-  overflow: hidden;
-  border: 1px solid var(--vus-border);
+.vs-page-container .vs-btn-details:hover {
+  background-color: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
 
-  /* Animation */
-  opacity: 0;
-  animation: vusFadeInUp 0.6s ease-out 0.4s forwards;
+/* Helper */
+.vs-page-container .text-right {
+  text-align: right !important;
 }
 
-/* Header dentro de card (titulo + pill) */
-.vus-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.9rem 1.25rem;
-  border-bottom: 1px solid var(--vus-border);
-}
-
-.vus-card-header h2,
-.vus-card-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1a202c;
-}
-
-/* Pill count (similar a lo que tienes) */
-.vus-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background-color: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
-
-  /* Optional animation */
-  opacity: 0;
-  animation: vusSlideInRight 0.6s ease-out 0.55s forwards;
-}
+.vs-page-container .vs-empty-row {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: #888 !important;
+  font-style: italic !important;
+}
 
-/* ================================
-   TABLE WRAPPER
-================================ */
-.tabla-wrapper {
-  width: 100%;
-  overflow-x: auto;
+/* Loading/Error */
+.vs-page-container .vs-loading,
+.vs-page-container .vs-error {
+  text-align: center !important;
+  padding: 2rem !important;
+  color: #666 !important;
 }
 
-/* La tabla REAL del DOM */
-.tabla-solicitudes.tabla-vus {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  min-width: 900px;
-}
-
-/* Header verde */
-.tabla-solicitudes.tabla-vus thead {
-  background-color: var(--vus-primary);
-  color: var(--vus-white);
-}
-
-.tabla-solicitudes.tabla-vus th {
-  padding: 1rem 1.5rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-.tabla-solicitudes.tabla-vus td {
-  padding: 1rem 1.5rem;
-  color: #374151;
-  font-size: 0.9rem;
-}
-
-/* Filas + animación escalonada */
-.tabla-solicitudes.tabla-vus tbody tr {
-  border-bottom: 1px solid var(--vus-border);
-  transition: background-color 0.1s;
-
-  opacity: 0;
-  animation: vusFadeInUp 0.5s ease-out forwards;
-}
-
-.tabla-solicitudes.tabla-vus tbody tr:last-child {
-  border-bottom: none;
-}
-
-.tabla-solicitudes.tabla-vus tbody tr:hover {
-  background-color: #f8fcf8;
-}
-
-/* Staggered Row Animations (igual al ms) */
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(1) { animation-delay: 0.5s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(2) { animation-delay: 0.55s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(3) { animation-delay: 0.6s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(4) { animation-delay: 0.65s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(5) { animation-delay: 0.7s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(6) { animation-delay: 0.75s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(7) { animation-delay: 0.8s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(8) { animation-delay: 0.85s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(9) { animation-delay: 0.9s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(10) { animation-delay: 0.95s; }
-.tabla-solicitudes.tabla-vus tbody tr:nth-child(n+11) { animation-delay: 1s; }
-
-/* ================================
-   BADGES (VUS)
-   Si tu VUS usa .badge o usa clases ms-like, cubrimos ambos
-================================ */
-.vus-badge,
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.vus-badge-success,
-.badge-success {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.vus-badge-warning,
-.badge-warning {
-  background-color: #fef9c3;
-  color: #854d0e;
-}
-
-.vus-badge-danger,
-.badge-danger {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.vus-badge-neutral,
-.badge-neutral {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-/* ================================
-   ACTION BUTTON (Revisar) - igual ms-btn-action
-   Tu botón actual en DOM suele ser .btn-secondary
-================================ */
-.vus-btn-action,
-.btn-secondary {
-  background-color: var(--vus-white);
-  color: #374151;
-  border: 1px solid #d1d5db;
-  padding: 0.35rem 0.85rem;
-  border-radius: 0.375rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.vus-btn-action:hover,
-.btn-secondary:hover {
-  background-color: var(--vus-primary);
-  border-color: var(--vus-primary);
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* ================================
-   BUSCAR CÉDULA (card + form)
-================================ */
-.vus-card-title {
-  margin: 0;
-}
-
-/* el form real en DOM */
-.vus-search-form {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  padding: 0.9rem 1.25rem 1.1rem;
-}
-
-/* input real en DOM */
-.vus-search-input {
-  flex: 1;
-  width: 100%;
-  border: 1px solid var(--vus-border);
-  border-radius: var(--vus-radius);
-  padding: 0.55rem 0.75rem;
-  background: #f9fafb;
-  font-size: 0.9rem;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.vus-search-input:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 1px #bbf7d0;
-  background: #ffffff;
-}
-
-/* botón buscar real en DOM (usa .btn-primary + .vus-search-btn) */
-.vus-search-btn,
-.btn-primary.vus-search-btn {
-  background-color: var(--vus-primary);
-  color: var(--vus-white);
-  padding: 0.6rem 1.2rem;
-  border-radius: var(--vus-radius);
-  font-weight: 600;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* Animation */
-  opacity: 0;
-  animation: vusSlideInRight 0.6s ease-out 0.2s forwards;
-}
-
-.vus-search-btn:hover,
-.btn-primary.vus-search-btn:hover {
-  background-color: var(--vus-primary-dark);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(40, 156, 46, 0.3);
-}
-
-/* Mensajes */
-.vus-loading,
-.vus-empty {
-  text-align: center;
-  padding: 3rem;
-  color: var(--vus-text-muted);
-}
-
-.vus-error {
-  color: #e53e3e;
-  padding: 1rem;
-  background-color: #fff5f5;
-  border: 1px solid #feb2b2;
-  border-radius: var(--vus-radius);
-  margin-bottom: 1rem;
-}
-
-/* ================================
-   KEYFRAMES (copiados de ms)
-================================ */
-@keyframes vusSlideInDown {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes vusSlideInRight {
-  from {
-    transform: translateX(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes vusFadeInUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.vs-page-container .vs-error {
+  color: red !important;
 }
 
 /* Responsive */
-@media (max-width: 900px) {
-  .vus-layout {
-    padding: 1.5rem 1rem;
+@media (max-width: 768px) {
+  .vs-page-container .vs-search-box {
+    flex-direction: column !important;
+    align-items: stretch !important;
   }
 
-  .vus-search-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .vus-search-btn {
-    width: 100%;
+  .vs-page-container .vs-table-wrapper {
+    overflow-x: auto !important;
   }
 }

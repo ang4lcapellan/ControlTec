@@ -67,64 +67,65 @@ export default function UpcDashboard() {
   };
 
   return (
-    <div className="vus-layout">
-      <header className="vus-header">
-        <h1>Bandeja Técnico UPC</h1>
-        <p>
-          Revisa los expedientes en estado{" "}
-          <strong>Validación Recepción</strong>, verifica los documentos y
-          envíalos a Evaluación Técnica o devuélvelos/recházalos según
-          corresponda.
-        </p>
-      </header>
-
-      {loading ? (
-        <p className="detalle-muted">Cargando solicitudes...</p>
-      ) : error ? (
-        <p className="login-error">{error}</p>
-      ) : solicitudes.length === 0 ? (
-        <p className="detalle-muted">
-          No hay solicitudes en <strong>Validación Recepción</strong> para
-          revisar.
-        </p>
-      ) : (
-        <div className="tabla-wrapper">
-          <table className="tabla-solicitudes tabla-vus">
-            <thead>
-              <tr>
-                <th style={{ width: "70px" }}>ID</th>
-                <th>Servicio</th>
-                <th style={{ width: "190px" }}>Solicitante</th>
-                <th style={{ width: "140px" }}>Estado</th>
-                <th style={{ width: "190px" }}>Fecha creación</th>
-                <th style={{ width: "80px" }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {solicitudes.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.id}</td>
-                  <td className="col-servicio">{s.servicio?.nombre}</td>
-                  <td>{s.usuario?.nombre ?? "N/D"}</td>
-                  <td>
-                    <span className={getEstadoClass(s.estado)}>{s.estado}</span>
-                  </td>
-                  <td>{formatFecha(s.fechaCreacion)}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn-secondary btn-sm btn-full"
-                      onClick={() => navigate(`/solicitudes/${s.id}`)}
-                    >
-                      Ver
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+  <div className="ct-app">
+    <div className="ct-page-container">
+      <header className="ct-header">
+        <div className="ct-title-group">
+          <h1 className="ct-title">Bandeja Técnico UPC</h1>
+          <p className="ct-subtitle">
+            Revisa los expedientes en estado <strong>Validación Recepción</strong>, verifica los documentos y envíalos a Evaluación Técnica o devuélvelos/recházalos según corresponda.
+          </p>
         </div>
-      )}
+      </header>
+      <section className="ct-card">
+        {loading ? (
+          <p className="ct-loading">Cargando solicitudes...</p>
+        ) : error ? (
+          <p className="ct-error">{error}</p>
+        ) : solicitudes.length === 0 ? (
+          <p className="ct-empty">
+            No hay solicitudes en <strong>Validación Recepción</strong> para revisar.
+          </p>
+        ) : (
+          <div className="ct-table-wrap">
+            <table className="ct-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "70px" }}>ID</th>
+                  <th>Servicio</th>
+                  <th style={{ width: "190px" }}>Solicitante</th>
+                  <th style={{ width: "140px" }}>Estado</th>
+                  <th style={{ width: "190px" }}>Fecha creación</th>
+                  <th style={{ width: "80px" }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {solicitudes.map((s) => (
+                  <tr key={s.id}>
+                    <td>{s.id}</td>
+                    <td>{s.servicio?.nombre}</td>
+                    <td>{s.usuario?.nombre ?? "N/D"}</td>
+                    <td>
+                      <span className="ct-badge ct-badge-warning">{s.estado}</span>
+                    </td>
+                    <td>{formatFecha(s.fechaCreacion)}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="ct-btn-details"
+                        onClick={() => navigate(`/solicitudes/${s.id}`)}
+                      >
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
-  );
+  </div>
+);
 }

@@ -1,8 +1,9 @@
 // src/pages/vus/VusSolicitudes.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/apiClient";
-import "./VusVentanilla.css";
+// Ya no se usa CSS Module, solo global.css
+
+
 
 export default function VusSolicitudes() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function VusSolicitudes() {
   const [error, setError] = useState("");
   const [cedula, setCedula] = useState("");
 
+  // Estados objetivo bandeja VUS
   const ESTADOS_OBJETIVO = ["Depositada", "DepositadaFase1", "DepositadaFase2"];
 
   useEffect(() => {
@@ -47,23 +49,21 @@ export default function VusSolicitudes() {
     if (!fechaStr) return "-";
     const d = new Date(fechaStr);
     if (Number.isNaN(d.getTime())) return "-";
-    return d.toLocaleString("es-DO", {
+    return d.toLocaleDateString("es-DO", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
-  // badge igual al solicitante (success/warning/danger)
-  const getEstadoBadgeClass = (estado = "") => {
+  const getEstadoClass = (estado = "") => {
     const e = String(estado).toLowerCase();
-    if (e.includes("rechaz")) return "vus-badge vus-badge-danger";
-    if (e.includes("devuelt")) return "vus-badge vus-badge-danger";
-    if (e.includes("aprob")) return "vus-badge vus-badge-success";
-    if (e.includes("deposit")) return "vus-badge vus-badge-warning";
-    return "vus-badge vus-badge-neutral";
+
+    if (e.includes("rechaz") || e.includes("cancel")) return "ct-badge ct-badge-danger";
+    if (e.includes("aprob") || e.includes("completad")) return "ct-badge ct-badge-success";
+    if (e.includes("pendiente") || e.includes("depositad")) return "ct-badge ct-badge-warning";
+    if (e.includes("revision") || e.includes("revisión")) return "ct-badge ct-badge-warning";
+    return "ct-badge ct-badge-neutral";
   };
 
   const solicitudesFiltradas = useMemo(() => {
@@ -77,100 +77,95 @@ export default function VusSolicitudes() {
   }, [cedula, solicitudes]);
 
   return (
-    <div className="vus-page">
-      <div className="vus-container">
-        {/* Header estilo solicitante */}
-        <div className="vus-header">
-          <div>
-            <h1 className="vus-title">Bandeja VUS</h1>
-            <p className="vus-subtitle">
-              Revisa las solicitudes pendientes de validación por VUS:{" "}
-              <b>Depositadas</b>, <b>Depositadas Fase 1</b> y{" "}
-              <b>Depositadas Fase 2</b>.
-            </p>
-          </div>
+    <div className="ct-page-container">
+      <div className="ct-header">
+        <div className="ct-title-group">
+          <h1 className="ct-title">Solicitudes VUS</h1>
+          <p className="ct-subtitle">Revisa el estado y avance de las solicitudes pendientes de validación por VUS.</p>
         </div>
+        <button
+          type="button"
+          className="ct-btn ct-btn-primary"
+          onClick={() => navigate("/vus/solicitudes/nueva")}
+        >
+          Nueva solicitud
+        </button>
+      </div>
 
-        {loading && <p className="vus-loading">Cargando solicitudes...</p>}
-        {error && !loading && <div className="vus-error">{error}</div>}
+      {/* Notificación de éxito si aplica */}
+      {/* Puedes agregar aquí una notificación si tu flujo lo requiere */}
 
-        {!loading && !error && solicitudesFiltradas.length === 0 && (
-          <p className="vus-empty">No hay solicitudes para mostrar.</p>
-        )}
+      {/* Buscar por cédula (arriba) */}
+      <div className="ct-card" style={{ marginBottom: "1rem" }}>
+        <div className="ct-card-body">
+          <h3 className="ct-card-title" style={{ marginBottom: "0.75rem" }}>
+            Buscar por Cédula
+          </h3>
 
-        {/* Card + tabla igual “Mis solicitudes” */}
-        {!loading && !error && solicitudesFiltradas.length > 0 && (
-          <section className="vus-card">
-            <div className="vus-card-head">
-              <div>
-                <h3 className="vus-card-title">Solicitudes para revisión VUS</h3>
-                <p className="vus-card-subtitle">
-                  {solicitudesFiltradas.length} registro(s)
-                </p>
-              </div>
-            </div>
-
-            <div className="vus-table-wrap">
-              <table className="vus-table">
-                <thead>
-                  <tr>
-                    <th className="vus-col-id">ID</th>
-                    <th className="vus-col-servicio">SERVICIO</th>
-                    <th className="vus-col-solicitante">SOLICITANTE</th>
-                    <th className="vus-col-estado">ESTADO</th>
-                    <th className="vus-col-fecha">FECHA</th>
-                    <th className="vus-col-acciones">ACCIONES</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {solicitudesFiltradas.map((s, idx) => (
-                    <tr key={s.id} style={{ "--row-delay": `${idx * 60}ms` }}>
-                      <td>{s.id}</td>
-                      <td>{s.servicio?.nombre ?? "-"}</td>
-                      <td>{s.usuario?.nombre ?? "-"}</td>
-                      <td>
-                        <span className={getEstadoBadgeClass(s.estado)}>
-                          {s.estado ?? "-"}
-                        </span>
-                      </td>
-                      <td>{formatFecha(s.fechaCreacion)}</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="vus-btn-secondary vus-btn-sm"
-                          onClick={() => navigate(`/solicitudes/${s.id}`)}
-                        >
-                          Revisar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {/* Buscar por cédula (card igual de limpia) */}
-        <section className="vus-search-card">
-          <h3 className="vus-search-title">Buscar solicitudes por cédula</h3>
-
-          <div className="vus-search-row">
+          <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: "0.75rem" }}>
             <input
-              className="vus-input"
-              placeholder="Cédula del solicitante (11 dígitos)"
+              className="vs-input"
+              placeholder="Ingrese el número de cédula..."
               value={cedula}
               onChange={(e) => setCedula(e.target.value)}
               inputMode="numeric"
             />
 
-            <button type="button" className="vus-btn-primary">
+            <button type="button" className="ct-btn ct-btn-primary">
               Buscar
             </button>
           </div>
-        </section>
+        </div>
       </div>
+
+      {/* Estados */}
+      {loading && <p className="ct-loading">Cargando solicitudes...</p>}
+      {error && !loading && <p className="ct-error">{error}</p>}
+
+      {!loading && !error && solicitudesFiltradas.length === 0 && (
+        <p className="ct-empty">No hay solicitudes pendientes de revisión.</p>
+      )}
+
+      {/* Tabla */}
+      {!loading && !error && solicitudesFiltradas.length > 0 && (
+        <div className="ct-table-wrap">
+          <table className="ct-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Servicio</th>
+                <th>Solicitante</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {solicitudesFiltradas.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.id}</td>
+                  <td>{s.servicio?.nombre || "-"}</td>
+                  <td>{s.usuario?.nombre || "-"}</td>
+                  <td>
+                    <span className="ct-badge ct-badge-neutral">{s.estado || "-"}</span>
+                  </td>
+                  <td>{formatFecha(s.fechaCreacion)}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="ct-btn-details"
+                      onClick={() => navigate(`/solicitudes/${s.id}`)}
+                    >
+                      Revisar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
+

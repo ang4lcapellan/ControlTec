@@ -1,228 +1,147 @@
-/* src/styles/layout.css (CORREGIDO)
-   ✅ Sin estilos de VUS / tablas viejas
-   ✅ Solo estilos globales y reutilizables
-*/
+/* =========================================================
+   src/styles/layout.css
+   🧱 Helpers de layout (solo estructura)
+   ✔ Scoped con .ct-app (NO pisa solicitante/detalle)
+   ✔ Grid / Flex / Spacing / Responsive
+   ⚠ No redefine ct-page-container (eso vive en global.css)
+========================================================= */
 
 /* ================================
-   GLOBAL RESET
+   CONTAINERS
 ================================ */
-html,
-body,
-#root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  background: #f3f4f6;
-  color: #111827;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* ================================
-   LINKS / ELEMENTOS BÁSICOS
-================================ */
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-/* ================================
-   NAVBAR
-================================ */
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  background: #289c2e; /* verde ControlTec */
-  color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.navbar-title {
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-  color: #ffffff;
-}
-
-.navbar-user {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.nav-link {
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 14px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: background 0.15s ease;
-}
-
-.nav-link:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* botón logout (icono o texto) */
-.nav-logout {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 6px 14px;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.06s ease;
-}
-
-.nav-logout:hover {
-  background: rgba(255, 255, 255, 0.18);
-  transform: translateY(-1px);
-}
-
-/* ================================
-   CONTENEDOR GENERAL DE PÁGINA
-================================ */
-.page-container {
-  max-width: 1400px;
+.ct-app .ct-container {
+  max-width: 1240px;      /* mismo estándar del sistema */
   margin: 0 auto;
-  padding: 40px 40px;
+  padding: 0 2rem;
 }
 
 @media (max-width: 900px) {
-  .page-container {
-    padding: 24px 16px;
+  .ct-app .ct-container {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .ct-app .ct-container {
+    padding: 0 1rem;
   }
 }
 
 /* ================================
-   BOTÓN PRIMARIO GLOBAL
+   FLEX HELPERS
 ================================ */
-.btn-primary {
-  display: inline-flex;
+.ct-app .ct-row {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 0.7rem 1rem;
-  border-radius: 0.5rem;
-  border: none;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  background: #14532d; /* verde oscuro */
-  color: #f9fafb;
-  transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+  gap: 1rem;
 }
 
-.btn-primary:hover {
-  background: #166534;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(20, 83, 45, 0.18);
+.ct-app .ct-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-.btn-primary:disabled {
-  opacity: 0.7;
-  cursor: default;
-  transform: none;
-  box-shadow: none;
-}
-
-/* ================================
-   FORM GROUPS (REUTILIZABLE)
-   ✅ No afecta VUS porque VUS usa .vus-input
-================================ */
-.form-group {
+.ct-app .ct-col {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.95rem;
+  gap: 1rem;
 }
 
-.form-group label {
-  font-weight: 600;
-  color: #111827;
+.ct-app .ct-wrap {
+  flex-wrap: wrap;
 }
 
-.form-group input[type="text"],
-.form-group input[type="email"],
-.form-group input[type="number"],
-.form-group input[type="password"],
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  font-size: 0.95rem;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  background: #ffffff;
-  border-color: #22c55e;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
+.ct-app .ct-center {
+  display: grid;
+  place-items: center;
 }
 
 /* ================================
-   UTILIDADES (opcionales)
+   GRID HELPERS
 ================================ */
-.text-muted {
-  color: #6b7280;
+.ct-app .ct-grid {
+  display: grid;
+  gap: 1.5rem;
 }
 
-.card-surface {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
+/* patrón tipo NuevaSolicitud (2 cols y cae a 1) */
+.ct-app .ct-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem; /* similar a ns-services-grid */
 }
 
-.hidden {
-  display: none !important;
+@media (max-width: 1100px) {
+  .ct-app .ct-grid-2 {
+    grid-template-columns: 1fr;
+  }
 }
+
+.ct-app .ct-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.ct-app .ct-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+/* Responsive Grid */
+@media (max-width: 1024px) {
+  .ct-app .ct-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ct-app .ct-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .ct-app .ct-grid-4,
+  .ct-app .ct-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================================
+   SPACING HELPERS
+================================ */
+.ct-app .ct-gap-1 { gap: 0.25rem !important; }
+.ct-app .ct-gap-2 { gap: 0.5rem !important; }
+.ct-app .ct-gap-4 { gap: 1rem !important; }
+.ct-app .ct-gap-6 { gap: 1.5rem !important; }
+
+.ct-app .ct-mt-2 { margin-top: 0.5rem !important; }
+.ct-app .ct-mt-4 { margin-top: 1rem !important; }
+.ct-app .ct-mt-6 { margin-top: 1.5rem !important; }
+.ct-app .ct-mt-8 { margin-top: 2rem !important; }
+
+.ct-app .ct-mb-2 { margin-bottom: 0.5rem !important; }
+.ct-app .ct-mb-4 { margin-bottom: 1rem !important; }
+.ct-app .ct-mb-6 { margin-bottom: 1.5rem !important; }
+.ct-app .ct-mb-8 { margin-bottom: 2rem !important; }
+
+/* ================================
+   NAVBAR BASE
+================================ */
+.ct-app .ct-navbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* ================================
+   UTILITIES
+================================ */
+.ct-app .ct-text-right { text-align: right; }
+.ct-app .ct-text-center { text-align: center; }
+.ct-app .ct-w-full { width: 100%; }
+.ct-app .ct-hidden { display: none; }

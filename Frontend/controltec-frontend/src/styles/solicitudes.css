@@ -105,7 +105,7 @@
 }
 
 /* Badges para estados */
-.badge {
+.sol-badge {
   display: inline-flex;
   align-items: center;
   padding: 0.18rem 0.55rem;
@@ -114,23 +114,23 @@
   font-weight: 500;
 }
 
-.badge-success {
+.sol-badge-success {
   background: rgba(22, 163, 74, 0.1);
   color: #15803d;
 }
 
-.badge-warning {
+.sol-badge-warning {
   background: rgba(234, 179, 8, 0.1);
   color: #92400e;
 }
 
-.badge-danger {
+.sol-badge-danger {
   background: rgba(248, 113, 113, 0.1);
   color: #b91c1c;
 }
 
 /* Botones secundarios para "Ver" */
-.btn-secondary {
+.sol-btn-secondary {
   border: 1px solid #d1d5db;
   background: #ffffff;
   color: #111827;
@@ -143,11 +143,11 @@
   justify-content: center;
 }
 
-.btn-secondary:hover {
+.sol-btn-secondary:hover {
   background: #f3f4f6;
 }
 
-.btn-sm {
+.sol-btn-sm {
   padding-block: 0.25rem;
   padding-inline: 0.65rem;
 }
@@ -326,7 +326,7 @@
 }
 
 /* Botón deshabilitado */
-.btn-disabled,
+.sol-btn-disabled,
 .btn-primary:disabled {
   background: #e5e7eb !important;
   color: #9ca3af !important;
@@ -335,7 +335,7 @@
 }
 
 /* Botón contorno (para descargas) */
-.btn-outline {
+.sol-btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -348,12 +348,12 @@
   cursor: pointer;
 }
 
-.btn-outline:hover {
+.sol-btn-outline:hover {
   background: #f3f4f6;
 }
 
 /* Botón rojo para cancelar solicitud */
-.btn-danger {
+.sol-btn-danger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -368,7 +368,7 @@
   color: #f9fafb;
 }
 
-.btn-danger:hover {
+.sol-btn-danger:hover {
   background: #991b1b;
 }
 

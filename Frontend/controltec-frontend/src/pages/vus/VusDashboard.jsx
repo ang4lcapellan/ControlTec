@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/apiClient";
-import "./VusVentanilla.css";
 
 // Normaliza estado (seguro ante null/undefined)
 const normalizarEstado = (s = "") =>
@@ -149,31 +148,30 @@ export default function VusDashboard() {
   }, [loadingDepos, solicitudesDepos.length]);
 
   return (
-    <div className="page-container vus-layout">
-      <header className="vus-header">
-        <h1>Bandeja VUS</h1>
-        <p>
-          Revisa las solicitudes pendientes de validación por VUS:
-          <strong> Depositadas</strong>, <strong>Depositadas Fase 1</strong> y{" "}
-          <strong>Depositadas Fase 2</strong>.
-        </p>
-      </header>
-
-      <section className="vus-card">
-        <div className="vus-card-header">
-          <h2>Solicitudes para revisión VUS</h2>
-          <span className="vus-pill">{cantidadTabla}</span>
+  <div className="ct-app">
+    <div className="ct-page-container">
+      <header className="ct-header">
+        <div className="ct-title-group">
+          <h1 className="ct-title">Bandeja VUS</h1>
+          <p className="ct-subtitle">
+            Revisa las solicitudes pendientes de validación por VUS: <strong>Depositadas</strong>, <strong>Depositadas Fase 1</strong> y <strong>Depositadas Fase 2</strong>.
+          </p>
         </div>
-
+      </header>
+      <section className="ct-card">
+        <div className="ct-card-head ct-row-between">
+          <h2 className="ct-card-title">Solicitudes para revisión VUS</h2>
+          <span className="ct-badge">{cantidadTabla}</span>
+        </div>
         {loadingDepos ? (
-          <p className="detalle-muted">Cargando solicitudes...</p>
+          <p className="ct-empty">Cargando solicitudes...</p>
         ) : errorDepos ? (
-          <p className="login-error">{errorDepos}</p>
+          <p className="ct-error">{errorDepos}</p>
         ) : solicitudesDepos.length === 0 ? (
-          <p className="detalle-muted">No hay solicitudes pendientes de revisión por VUS.</p>
+          <p className="ct-empty">No hay solicitudes pendientes de revisión por VUS.</p>
         ) : (
-          <div className="tabla-wrapper">
-            <table className="tabla-solicitudes tabla-vus">
+          <div className="ct-table-wrap">
+            <table className="ct-table">
               <thead>
                 <tr>
                   <th style={{ width: "70px" }}>ID</th>
@@ -188,14 +186,14 @@ export default function VusDashboard() {
                 {solicitudesDepos.map((s) => (
                   <tr key={s.id}>
                     <td>{s.id}</td>
-                    <td className="col-servicio">{s.servicio?.nombre ?? "N/D"}</td>
+                    <td>{s.servicio?.nombre ?? "N/D"}</td>
                     <td>{s.usuario?.nombre ?? "N/D"}</td>
                     <td>
                       <span className={getEstadoBadgeClass(s.estado)}>{s.estado}</span>
                     </td>
                     <td>{formatearFecha(s.fechaCreacion)}</td>
                     <td>
-                      <Link to={`/solicitudes/${s.id}`} className="btn-secondary btn-sm btn-full">
+                      <Link to={`/solicitudes/${s.id}`} className="ct-btn ct-btn-details">
                         Revisar
                       </Link>
                     </td>
@@ -206,71 +204,7 @@ export default function VusDashboard() {
           </div>
         )}
       </section>
-
-      <section className="vus-card">
-        <h2 className="vus-card-title">Buscar solicitudes por cédula</h2>
-
-        <form onSubmit={handleBuscarCedula} className="vus-search-form">
-          <input
-            type="text"
-            value={cedula}
-            onChange={(e) => setCedula(normalizarCedula(e.target.value))}
-            placeholder="Cédula del solicitante (con o sin guiones)"
-            className="input-text vus-search-input"
-          />
-          <button
-            type="submit"
-            className="btn-primary vus-search-btn"
-            disabled={buscandoCedula}
-          >
-            {buscandoCedula ? "Buscando..." : "Buscar"}
-          </button>
-        </form>
-
-        {errorCedula && <p className="login-error">{errorCedula}</p>}
-
-        {solicitudesCedula.length > 0 ? (
-          <div className="vus-search-results">
-            <h3>Resultados de búsqueda</h3>
-            <div className="tabla-wrapper">
-              <table className="tabla-solicitudes tabla-vus">
-                <thead>
-                  <tr>
-                    <th style={{ width: "70px" }}>ID</th>
-                    <th>Servicio</th>
-                    <th style={{ width: "180px" }}>Solicitante</th>
-                    <th style={{ width: "130px" }}>Estado</th>
-                    <th style={{ width: "190px" }}>Fecha creación</th>
-                    <th style={{ width: "80px" }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {solicitudesCedula.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.id}</td>
-                      <td className="col-servicio">{s.servicio?.nombre ?? "N/D"}</td>
-                      <td>{s.usuario?.nombre ?? "N/D"}</td>
-                      <td>
-                        <span className={getEstadoBadgeClass(s.estado)}>{s.estado}</span>
-                      </td>
-                      <td>{formatearFecha(s.fechaCreacion)}</td>
-                      <td>
-                        <Link to={`/solicitudes/${s.id}`} className="btn-secondary btn-sm btn-full">
-                          Ver
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : yaBuscoCedula && !buscandoCedula && !errorCedula ? (
-          <p className="detalle-muted" style={{ marginTop: "1rem" }}>
-            No se encontraron solicitudes para esta cédula.
-          </p>
-        ) : null}
-      </section>
     </div>
-  );
+  </div>
+);
 }
