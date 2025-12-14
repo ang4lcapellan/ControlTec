@@ -1,13 +1,36 @@
 // src/pages/vus/VusDashboard.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/apiClient";
+import "./VusVentanilla.css";
 
+// Normaliza estado (seguro ante null/undefined)
 const normalizarEstado = (s = "") =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  (s ?? "")
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
 
+// Deja solo números, máx 11
 const normalizarCedula = (value = "") =>
-  value.replace(/[^0-9]/g, "").slice(0, 11);
+  (value ?? "").toString().replace(/[^0-9]/g, "").slice(0, 11);
+
+const ESTADOS_VUS = new Set(["depositada", "depositadafase1", "depositadafase2"]);
+
+const formatearFecha = (fechaStr) => {
+  if (!fechaStr) return "N/D";
+  const d = new Date(fechaStr);
+  if (Number.isNaN(d.getTime())) return "N/D";
+  return d.toLocaleString("es-DO", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 export default function VusDashboard() {
   const [loadingDepos, setLoadingDepos] = useState(true);
@@ -18,6 +41,7 @@ export default function VusDashboard() {
   const [buscandoCedula, setBuscandoCedula] = useState(false);
   const [errorCedula, setErrorCedula] = useState("");
   const [solicitudesCedula, setSolicitudesCedula] = useState([]);
+  const [yaBuscoCedula, setYaBuscoCedula] = useState(false);
 
   useEffect(() => {
     const cargarSolicitudesVus = async () => {
@@ -29,12 +53,8 @@ export default function VusDashboard() {
         const todas = res.data || [];
 
         const paraRevisionVus = todas.filter((s) => {
-          const estado = normalizarEstado(s.estado);
-          return (
-            estado === "depositada" ||
-            estado === "depositadafase1" ||
-            estado === "depositadafase2"
-          );
+          const estado = normalizarEstado(s?.estado);
+          return ESTADOS_VUS.has(estado);
         });
 
         setSolicitudesDepos(paraRevisionVus);
@@ -45,9 +65,7 @@ export default function VusDashboard() {
         if (status === 401) {
           setErrorDepos("Tu sesión ha expirado. Vuelve a iniciar sesión.");
         } else {
-          setErrorDepos(
-            "Ocurrió un error al cargar las solicitudes para revisión."
-          );
+          setErrorDepos("Ocurrió un error al cargar las solicitudes para revisión.");
         }
       } finally {
         setLoadingDepos(false);
@@ -59,7 +77,9 @@ export default function VusDashboard() {
 
   const handleBuscarCedula = async (e) => {
     e.preventDefault();
+
     const ced = normalizarCedula(cedula);
+    setYaBuscoCedula(true);
 
     setErrorCedula("");
     setSolicitudesCedula([]);
@@ -69,23 +89,32 @@ export default function VusDashboard() {
       return;
     }
 
+    if (ced.length !== 11) {
+      setErrorCedula("La cédula debe tener exactamente 11 dígitos (sin guiones).");
+      return;
+    }
+
     setBuscandoCedula(true);
 
     try {
+      // Si ya tienes solicitudesDepos cargadas, puedes filtrar ahí mismo.
+      // Pero mantenemos tu flujo de volver a pedir /api/Solicitudes para NO cambiar comportamiento.
       const res = await api.get("/api/Solicitudes");
       const todas = res.data || [];
 
       const relacionadas = todas.filter((s) => {
-        const estado = normalizarEstado(s.estado);
-        return (
-          estado === "depositada" ||
-          estado === "depositadafase1" ||
-          estado === "depositadafase2"
-        );
+        const estado = normalizarEstado(s?.estado);
+        return ESTADOS_VUS.has(estado);
       });
 
       const filtradasPorCedula = relacionadas.filter((s) => {
-        return true;
+        const cedUsuario =
+          normalizarCedula(s?.usuario?.cedula) ||
+          normalizarCedula(s?.usuario?.Cedula) ||
+          normalizarCedula(s?.cedulaSolicitante) ||
+          normalizarCedula(s?.CedulaSolicitante);
+
+        return cedUsuario === ced;
       });
 
       setSolicitudesCedula(filtradasPorCedula);
@@ -100,9 +129,7 @@ export default function VusDashboard() {
           "No tienes permiso para usar este filtro. Pide que el backend exponga un endpoint para búsqueda por cédula."
         );
       } else {
-        setErrorCedula(
-          "Ocurrió un error al buscar las solicitudes de ese solicitante."
-        );
+        setErrorCedula("Ocurrió un error al buscar las solicitudes de ese solicitante.");
       }
     } finally {
       setBuscandoCedula(false);
@@ -115,6 +142,11 @@ export default function VusDashboard() {
     if (estadoNorm === "depositadafase2") return "badge badge-primary";
     return "badge badge-warning";
   };
+
+  const cantidadTabla = useMemo(() => {
+    if (loadingDepos) return "Cargando...";
+    return `${solicitudesDepos.length} registro(s)`;
+  }, [loadingDepos, solicitudesDepos.length]);
 
   return (
     <div className="page-container vus-layout">
@@ -130,11 +162,7 @@ export default function VusDashboard() {
       <section className="vus-card">
         <div className="vus-card-header">
           <h2>Solicitudes para revisión VUS</h2>
-          <span className="vus-pill">
-            {loadingDepos
-              ? "Cargando..."
-              : `${solicitudesDepos.length} registro(s)`}
-          </span>
+          <span className="vus-pill">{cantidadTabla}</span>
         </div>
 
         {loadingDepos ? (
@@ -142,9 +170,7 @@ export default function VusDashboard() {
         ) : errorDepos ? (
           <p className="login-error">{errorDepos}</p>
         ) : solicitudesDepos.length === 0 ? (
-          <p className="detalle-muted">
-            No hay solicitudes pendientes de revisión por VUS.
-          </p>
+          <p className="detalle-muted">No hay solicitudes pendientes de revisión por VUS.</p>
         ) : (
           <div className="tabla-wrapper">
             <table className="tabla-solicitudes tabla-vus">
@@ -162,27 +188,14 @@ export default function VusDashboard() {
                 {solicitudesDepos.map((s) => (
                   <tr key={s.id}>
                     <td>{s.id}</td>
-                    <td className="col-servicio">{s.servicio?.nombre}</td>
+                    <td className="col-servicio">{s.servicio?.nombre ?? "N/D"}</td>
                     <td>{s.usuario?.nombre ?? "N/D"}</td>
                     <td>
-                      <span className={getEstadoBadgeClass(s.estado)}>
-                        {s.estado}
-                      </span>
+                      <span className={getEstadoBadgeClass(s.estado)}>{s.estado}</span>
                     </td>
+                    <td>{formatearFecha(s.fechaCreacion)}</td>
                     <td>
-                      {new Date(s.fechaCreacion).toLocaleString("es-DO", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                    <td>
-                      <Link
-                        to={`/solicitudes/${s.id}`}
-                        className="btn-secondary btn-sm btn-full"
-                      >
+                      <Link to={`/solicitudes/${s.id}`} className="btn-secondary btn-sm btn-full">
                         Revisar
                       </Link>
                     </td>
@@ -235,27 +248,14 @@ export default function VusDashboard() {
                   {solicitudesCedula.map((s) => (
                     <tr key={s.id}>
                       <td>{s.id}</td>
-                      <td className="col-servicio">{s.servicio?.nombre}</td>
+                      <td className="col-servicio">{s.servicio?.nombre ?? "N/D"}</td>
                       <td>{s.usuario?.nombre ?? "N/D"}</td>
                       <td>
-                        <span className={getEstadoBadgeClass(s.estado)}>
-                          {s.estado}
-                        </span>
+                        <span className={getEstadoBadgeClass(s.estado)}>{s.estado}</span>
                       </td>
+                      <td>{formatearFecha(s.fechaCreacion)}</td>
                       <td>
-                        {new Date(s.fechaCreacion).toLocaleString("es-DO", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </td>
-                      <td>
-                        <Link
-                          to={`/solicitudes/${s.id}`}
-                          className="btn-secondary btn-sm btn-full"
-                        >
+                        <Link to={`/solicitudes/${s.id}`} className="btn-secondary btn-sm btn-full">
                           Ver
                         </Link>
                       </td>
@@ -265,7 +265,7 @@ export default function VusDashboard() {
               </table>
             </div>
           </div>
-        ) : cedula && !buscandoCedula ? (
+        ) : yaBuscoCedula && !buscandoCedula && !errorCedula ? (
           <p className="detalle-muted" style={{ marginTop: "1rem" }}>
             No se encontraron solicitudes para esta cédula.
           </p>
