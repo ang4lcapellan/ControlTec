@@ -27,11 +27,13 @@ export default function AdminUsuarios() {
   const [rol, setRol] = useState("Solicitante");
   const [activo, setActivo] = useState(true);
 
+  // ✅ nueva contraseña (crear/editar opcional)
+  const [password, setPassword] = useState("");
+
   // búsqueda por cédula
   const [searchCedula, setSearchCedula] = useState("");
 
-  const normalizarCedula = (v = "") =>
-    v.replace(/[^0-9]/g, "").slice(0, 11);
+  const normalizarCedula = (v = "") => v.replace(/[^0-9]/g, "").slice(0, 11);
 
   const cargarUsuarios = async () => {
     try {
@@ -42,8 +44,8 @@ export default function AdminUsuarios() {
       setUsuarios(res.data || []);
     } catch (err) {
       console.error(err);
-
       const status = err.response?.status;
+
       if (status && status !== 404) {
         setError("No se pudieron cargar los usuarios.");
       } else {
@@ -66,6 +68,7 @@ export default function AdminUsuarios() {
     setCedula("");
     setRol("Solicitante");
     setActivo(true);
+    setPassword(""); // ✅ reset
   };
 
   const handleCrearOEditarUsuario = async (e) => {
@@ -77,17 +80,29 @@ export default function AdminUsuarios() {
       return;
     }
 
+    // ✅ Validación: si estás creando, contraseña obligatoria
+    if (!editingId && !password.trim()) {
+      setError("La contraseña es obligatoria para crear el usuario.");
+      return;
+    }
+
     try {
       setLoading(true);
 
+      // ✅ Payload: en crear SIEMPRE va contraseña
+      // ✅ En editar, solo se manda si el usuario escribió una nueva
       const payload = {
         nombre,
         correo,
-        ...(editingId ? {} : { contraseña: "Password123!" }),
         roll: rol,
         activo,
         esInternoPendiente: rol !== "Solicitante",
         cedula: cedula ? normalizarCedula(cedula) : null,
+        ...(editingId
+          ? password.trim()
+            ? { contraseña: password }
+            : {}
+          : { contraseña: password }),
       };
 
       if (editingId) {
@@ -118,9 +133,7 @@ export default function AdminUsuarios() {
 
       await api.delete(`/api/Usuarios/${id}`);
 
-      if (editingId === id) {
-        resetForm();
-      }
+      if (editingId === id) resetForm();
 
       await cargarUsuarios();
     } catch (err) {
@@ -138,6 +151,7 @@ export default function AdminUsuarios() {
     setCedula(u.cedula || "");
     setRol(u.roll || "Solicitante");
     setActivo(!!u.activo);
+    setPassword(""); // ✅ en edición no rellenamos contraseña
   };
 
   // ====== FILTRADO POR CÉDULA ======
@@ -152,231 +166,220 @@ export default function AdminUsuarios() {
       : usuarios;
 
   return (
-    <div className="page">
-      <h1>Gestión de Usuarios y Perfiles</h1>
-      <p>
-        Crea usuarios del sistema, define su rol/perfil y controla si están activos.
-      </p>
-
-      {error && (
-        <div className="login-error-banner" style={{ marginTop: "1rem" }}>
-          {error}
-        </div>
-      )}
-
-      <div className="admin-two-columns">
-        {/* Columna izquierda: formulario CREAR / EDITAR */}
-        <section className="admin-panel">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "0.75rem",
-            }}
-          >
-            <h2>{editingId ? "Editar usuario" : "Crear nuevo usuario"}</h2>
-            {editingId && (
-              <button
-                type="button"
-                onClick={resetForm}
-                style={{
-                  fontSize: "0.8rem",
-                  borderRadius: "999px",
-                  padding: "0.3rem 0.75rem",
-                  border: "1px solid #bfdbfe",
-                  background: "#eff6ff",
-                  color: "#1d4ed8",
-                  cursor: "pointer",
-                }}
-              >
-                + Nuevo usuario
-              </button>
-            )}
+    <div className="ct-app">
+      <div className="ct-page-container">
+        <header className="ct-header">
+          <div className="ct-title-group">
+            <h1 className="ct-title">Gestión de Usuarios y Perfiles</h1>
+            <p className="ct-subtitle">
+              Crea usuarios del sistema, define su rol/perfil y controla si están activos.
+            </p>
           </div>
+        </header>
 
-          <form onSubmit={handleCrearOEditarUsuario} className="admin-form">
-            <div className="form-group">
-              <label>Nombre completo</label>
-              <input
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                required
-              />
-            </div>
+        {error && <div className="ct-error">{error}</div>}
 
-            <div className="form-group">
-              <label>Correo electrónico</label>
-              <input
-                type="email"
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
-                required
-              />
-            </div>
+        <div className="ct-grid-admin-users">
+          {/* ==========================
+              Columna izquierda: FORM
+             ========================== */}
+          <section className="ct-card">
+            <div className="ct-row-between ct-mb-4">
+              <h2 style={{ margin: 0 }}>
+                {editingId ? "Editar usuario" : "Crear nuevo usuario"}
+              </h2>
 
-            <div className="form-group">
-              <label>Cédula (opcional / 11 dígitos)</label>
-              <input
-                value={cedula}
-                onChange={(e) => setCedula(normalizarCedula(e.target.value))}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Rol / Perfil</label>
-              <select value={rol} onChange={(e) => setRol(e.target.value)}>
-                {ROLES_POSIBLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Checkbox estético como en servicios */}
-            <div className="form-group form-group-inline">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={activo}
-                  onChange={(e) => setActivo(e.target.checked)}
-                />
-                <span>Usuario activo</span>
-              </label>
-            </div>
-
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading
-                ? "Guardando..."
-                : editingId
-                ? "Guardar cambios"
-                : "Crear usuario"}
-            </button>
-          </form>
-        </section>
-
-        {/* Columna derecha: tabla de usuarios */}
-        <section className="admin-panel">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
-            <h2>Usuarios registrados</h2>
-
-            {/* Buscador por cédula */}
-            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <input
-                type="text"
-                placeholder="Buscar por cédula"
-                value={searchCedula}
-                onChange={(e) => setSearchCedula(e.target.value)}
-                style={{
-                  padding: "0.35rem 0.6rem",
-                  borderRadius: "0.5rem",
-                  border: "1px solid #e5e7eb",
-                  fontSize: "0.85rem",
-                }}
-              />
-              {cedulaBuscada.length > 0 && (
+              {editingId && (
                 <button
                   type="button"
-                  onClick={() => setSearchCedula("")}
-                  style={{
-                    fontSize: "0.8rem",
-                    borderRadius: "999px",
-                    padding: "0.25rem 0.65rem",
-                    border: "1px solid #d1d5db",
-                    background: "#f9fafb",
-                    cursor: "pointer",
-                  }}
+                  onClick={resetForm}
+                  className="ct-btn ct-btn-outline"
                 >
-                  Limpiar
+                  + Nuevo usuario
                 </button>
               )}
             </div>
-          </div>
 
-          {loading && <p>Cargando usuarios...</p>}
+            <form onSubmit={handleCrearOEditarUsuario} className="ct-col">
+              <div className="form-group">
+                <label>Nombre completo</label>
+                <input
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  required
+                />
+              </div>
 
-          {!loading && usuariosFiltrados.length === 0 && (
-            <p style={{ color: "#6b7280", marginTop: "0.75rem" }}>
-              {cedulaBuscada.length > 0
-                ? "No se encontraron usuarios con esa cédula."
-                : "No hay usuarios registrados o la API aún no está disponible."}
-            </p>
-          )}
+              <div className="form-group">
+                <label>Correo electrónico</label>
+                <input
+                  type="email"
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
+                  required
+                />
+              </div>
 
-          {!loading && usuariosFiltrados.length > 0 && (
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Rol</th>
-                    <th>Activo</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {usuariosFiltrados.map((u) => (
-                    <tr key={u.id}>
-                      <td>{u.nombre}</td>
-                      <td>{u.correo}</td>
-                      <td>{u.roll}</td>
-                      <td>{u.activo ? "Sí" : "No"}</td>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "0.75rem", // ⬅️ más espacio entre botones
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => startEdit(u)}
-                            style={{
-                              padding: "0.25rem 0.6rem",
-                              borderRadius: "0.4rem",
-                              border: "1px solid #bbf7d0",
-                              background: "#ecfdf5",
-                              color: "#166534",
-                              cursor: "pointer",
-                              fontSize: "0.8rem",
-                            }}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEliminarUsuario(u.id)}
-                            style={{
-                              padding: "0.25rem 0.6rem",
-                              borderRadius: "0.4rem",
-                              border: "1px solid #fecaca",
-                              background: "#fee2e2",
-                              color: "#b91c1c",
-                              cursor: "pointer",
-                              fontSize: "0.8rem",
-                            }}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+              <div className="form-group">
+                <label>Cédula (opcional / 11 dígitos)</label>
+                <input
+                  value={cedula}
+                  onChange={(e) => setCedula(normalizarCedula(e.target.value))}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Rol / Perfil</label>
+                <select value={rol} onChange={(e) => setRol(e.target.value)}>
+                  {ROLES_POSIBLES.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
                   ))}
-                </tbody>
-              </table>
+                </select>
+              </div>
+
+              {/* ✅ contraseña */}
+              <div className="form-group">
+                <label>
+                  Contraseña{" "}
+                  {editingId ? (
+                    <span style={{ color: "var(--ct-text-muted)", fontSize: "0.85rem" }}>
+                      (opcional: solo si deseas cambiarla)
+                    </span>
+                  ) : null}
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={editingId ? "Dejar en blanco para mantener" : "Ingrese una contraseña"}
+                  required={!editingId}
+                />
+              </div>
+
+              <div className="form-group">
+                <label
+                  className="checkbox-label"
+                  style={{ display: "flex", gap: "0.5rem" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={activo}
+                    onChange={(e) => setActivo(e.target.checked)}
+                  />
+                  <span>Usuario activo</span>
+                </label>
+              </div>
+
+              <button type="submit" className="ct-btn ct-btn-primary" disabled={loading}>
+                {loading
+                  ? "Guardando..."
+                  : editingId
+                  ? "Guardar cambios"
+                  : "Crear usuario"}
+              </button>
+            </form>
+          </section>
+
+          {/* ==========================
+              Columna derecha: TABLA
+             ========================== */}
+          <section className="ct-card">
+            <div className="ct-row-between ct-mb-4 ct-wrap">
+              <h2 style={{ margin: 0 }}>Usuarios registrados</h2>
+
+              <div className="ct-row ct-gap-2 ct-wrap">
+                <input
+                  type="text"
+                  placeholder="Buscar por cédula"
+                  value={searchCedula}
+                  onChange={(e) => setSearchCedula(e.target.value)}
+                  style={{
+                    padding: "0.45rem 0.7rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid var(--ct-border)",
+                    fontSize: "0.9rem",
+                  }}
+                />
+                {cedulaBuscada.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchCedula("")}
+                    className="ct-btn ct-btn-outline"
+                  >
+                    Limpiar
+                  </button>
+                )}
+              </div>
             </div>
-          )}
-        </section>
+
+            {loading && <div className="ct-loading">Cargando usuarios...</div>}
+
+            {!loading && usuariosFiltrados.length === 0 && (
+              <div className="ct-empty">
+                {cedulaBuscada.length > 0
+                  ? "No se encontraron usuarios con esa cédula."
+                  : "No hay usuarios registrados o la API aún no está disponible."}
+              </div>
+            )}
+
+            {!loading && usuariosFiltrados.length > 0 && (
+              <div className="ct-table-wrap">
+                <table className="ct-table ct-table--actions">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Correo</th>
+                      <th>Rol</th>
+                      <th>Activo</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {usuariosFiltrados.map((u) => (
+                      <tr key={u.id}>
+                        <td>{u.nombre}</td>
+                        <td>{u.correo}</td>
+                        <td>{u.roll}</td>
+                        <td>
+                          <span
+                            className={`ct-badge ${
+                              u.activo ? "ct-badge-success" : "ct-badge-neutral"
+                            }`}
+                          >
+                            {u.activo ? "Sí" : "No"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="ct-row ct-wrap ct-gap-2">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(u)}
+                              className="ct-btn ct-btn-outline"
+                            >
+                              Editar
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleEliminarUsuario(u.id)}
+                              className="ct-btn ct-btn-outline"
+                              style={{ borderColor: "#fecaca", color: "#b91c1c" }}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

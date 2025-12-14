@@ -410,37 +410,36 @@ export default function SolicitudDetalle() {
     }
   };
 
-  const handleEncargadoDevolverTecnico = async () => {
+  const handleEncargadoRechazar = async () => {
     if (!detalle) return;
 
     if (!comentarioEncargado.trim()) {
-      alert("Debes indicar el motivo de la devolución al Técnico UPC.");
+      alert("Debes indicar el motivo del rechazo.");
       return;
     }
 
-    const confirmado = window.confirm(
-      "¿Confirmas que deseas devolver la solicitud al Técnico UPC para ajustes?"
-    );
+    const confirmado = window.confirm("¿Confirmas que la solicitud será rechazada definitivamente?");
     if (!confirmado) return;
 
     setAccionesBloqueadas(true);
     try {
       await api.post(`/api/Solicitudes/${detalle.id}/cambiar-estado`, {
-        estadoNuevo: "Validación Recepción",
+        estadoNuevo: "RechazadaET",
         comentario: comentarioEncargado,
       });
 
       setComentarioEncargado("");
       await cargarDetalle();
-      alert("Solicitud devuelta al Técnico UPC para nueva revisión.");
+      alert("Solicitud rechazada.");
     } catch (err) {
-      console.error("Error al devolver al Técnico desde Encargado UPC:", err);
+      console.error("Error al rechazar como Encargado UPC:", err);
       alert(
-        "No fue posible devolver la solicitud al Técnico UPC. Verifica que el backend permita esta transición para el rol EncargadoUPC."
+        "No fue posible rechazar la solicitud. Verifica que el backend permita esta transición para el rol EncargadoUPC."
       );
       setAccionesBloqueadas(false);
     }
   };
+
 
   // =================== ACCIONES DNCD ===================
   const handleDncdAprobar = async () => {
@@ -978,10 +977,10 @@ export default function SolicitudDetalle() {
                     <button
                       type="button"
                       className="sd-btn sd-btn-outline"
-                      onClick={handleEncargadoDevolverTecnico}
+                      onClick={handleEncargadoRechazar}
                       disabled={accionesBloqueadas}
                     >
-                      Devolver al Técnico UPC
+                      Rechazar
                     </button>
                   </div>
                 </div>

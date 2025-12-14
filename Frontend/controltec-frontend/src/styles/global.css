@@ -314,3 +314,26 @@ body {
     transition: none !important;
   }
 }
+/* ================================
+   TABLA CON ACCIONES (ADMIN)
+================================ */
+.ct-table--actions thead tr,
+.ct-table--actions tbody tr {
+  display: grid;
+  grid-template-columns:
+    2fr      /* Nombre */
+    3fr      /* Correo */
+    1.5fr    /* Rol */
+    1fr      /* Activo */
+    1.5fr;   /* Acciones */
+  align-items: center;
+}
+/* ================================
+   GRID ADMIN USUARIOS
+================================ */
+.ct-grid-admin-users {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr; /* izquierda / derecha */
+  gap: 1.5rem;
+  align-items: start;
+}
