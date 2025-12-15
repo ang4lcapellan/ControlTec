@@ -92,6 +92,7 @@ export default function AdminUsuarios() {
       // ✅ Payload: en crear SIEMPRE va contraseña
       // ✅ En editar, solo se manda si el usuario escribió una nueva
       const payload = {
+        id: editingId ? editingId : 0,
         nombre,
         correo,
         roll: rol,
@@ -159,10 +160,10 @@ export default function AdminUsuarios() {
   const usuariosFiltrados =
     cedulaBuscada.length > 0
       ? usuarios.filter(
-          (u) =>
-            u.cedula &&
-            normalizarCedula(String(u.cedula)).includes(cedulaBuscada)
-        )
+        (u) =>
+          u.cedula &&
+          normalizarCedula(String(u.cedula)).includes(cedulaBuscada)
+      )
       : usuarios;
 
   return (
@@ -186,7 +187,7 @@ export default function AdminUsuarios() {
           <section className="ct-card">
             <div className="ct-row-between ct-mb-4">
               <h2 style={{ margin: 0 }}>
-                {editingId ? "Editar usuario" : "Crear nuevo usuario"}
+                {editingId ? "Editar usuario" : "Detalles del usuario (Seleccione para editar)"}
               </h2>
 
               {editingId && (
@@ -195,7 +196,7 @@ export default function AdminUsuarios() {
                   onClick={resetForm}
                   className="ct-btn ct-btn-outline"
                 >
-                  + Nuevo usuario
+                  Cancelar edición
                 </button>
               )}
             </div>
@@ -207,6 +208,7 @@ export default function AdminUsuarios() {
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   required
+                  disabled={!editingId}
                 />
               </div>
 
@@ -217,6 +219,7 @@ export default function AdminUsuarios() {
                   value={correo}
                   onChange={(e) => setCorreo(e.target.value)}
                   required
+                  disabled={!editingId}
                 />
               </div>
 
@@ -225,12 +228,13 @@ export default function AdminUsuarios() {
                 <input
                   value={cedula}
                   onChange={(e) => setCedula(normalizarCedula(e.target.value))}
+                  disabled={!editingId}
                 />
               </div>
 
               <div className="form-group">
                 <label>Rol / Perfil</label>
-                <select value={rol} onChange={(e) => setRol(e.target.value)}>
+                <select value={rol} onChange={(e) => setRol(e.target.value)} disabled={!editingId}>
                   {ROLES_POSIBLES.map((r) => (
                     <option key={r} value={r}>
                       {r}
@@ -253,8 +257,9 @@ export default function AdminUsuarios() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={editingId ? "Dejar en blanco para mantener" : "Ingrese una contraseña"}
-                  required={!editingId}
+                  placeholder={editingId ? "Dejar en blanco para mantener" : ""}
+                  required={false}
+                  disabled={!editingId}
                 />
               </div>
 
@@ -267,18 +272,17 @@ export default function AdminUsuarios() {
                     type="checkbox"
                     checked={activo}
                     onChange={(e) => setActivo(e.target.checked)}
+                    disabled={!editingId}
                   />
                   <span>Usuario activo</span>
                 </label>
               </div>
 
-              <button type="submit" className="ct-btn ct-btn-primary" disabled={loading}>
-                {loading
-                  ? "Guardando..."
-                  : editingId
-                  ? "Guardar cambios"
-                  : "Crear usuario"}
-              </button>
+              {editingId && (
+                <button type="submit" className="ct-btn ct-btn-primary" disabled={loading}>
+                  {loading ? "Guardando..." : "Guardar cambios"}
+                </button>
+              )}
             </form>
           </section>
 
@@ -345,9 +349,8 @@ export default function AdminUsuarios() {
                         <td>{u.roll}</td>
                         <td>
                           <span
-                            className={`ct-badge ${
-                              u.activo ? "ct-badge-success" : "ct-badge-neutral"
-                            }`}
+                            className={`ct-badge ${u.activo ? "ct-badge-success" : "ct-badge-neutral"
+                              }`}
                           >
                             {u.activo ? "Sí" : "No"}
                           </span>

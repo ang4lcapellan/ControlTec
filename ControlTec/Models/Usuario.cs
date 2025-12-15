@@ -16,8 +16,6 @@ public class Usuario
     [EmailAddress]
     public string Correo { get; set; } = null!;
 
-    [Required]
-    [JsonIgnore]
     public string Contraseña { get; set; } = null!;
 
     [Required]
@@ -32,7 +30,6 @@ public class Usuario
     public DateTime? CodigoVerificacionExpira { get; set; }
 
     // 🔹 Nueva propiedad
-    [Required]
     [StringLength(11, MinimumLength = 11)]
-    public string Cedula { get; set; } = null!;
+    public string? Cedula { get; set; }
 }
