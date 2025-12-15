@@ -31,15 +31,18 @@ export function AuthProvider({ children }) {
 
   // 🔹 Login usando la API real
   const login = async (correo, password) => {
-    // IMPORTANTE: esta es la ruta real de tu backend
     const res = await api.post("/api/Auth/login", {
       correo,
       password,
     });
-
     const data = res.data || {};
 
-    // Flexibilidad por si el backend cambia nombres de campos
+    // Si el backend responde requiereCodigo, devolvemos el objeto tal cual
+    if (data.requiereCodigo) {
+      return data; // { requiereCodigo, mensaje, correo }
+    }
+
+    // Flujo normal con JWT
     const jwt = data.token || data.accessToken || data.jwt;
     const user =
       data.usuario ||
@@ -54,16 +57,12 @@ export function AuthProvider({ children }) {
 
     setToken(jwt);
     setUsuario(user);
-
     localStorage.setItem("token", jwt);
     localStorage.setItem("usuario", JSON.stringify(user));
-
     api.defaults.headers.common.Authorization = `Bearer ${jwt}`;
-
-    // 👉 devolvemos SIEMPRE el usuario para que Login.jsx
-    // pueda leer el rol y redirigir
     return user;
   };
+
 
   // 🔹 Registro (solo crea el usuario)
   const register = async (payload) => {
@@ -92,9 +91,18 @@ export function AuthProvider({ children }) {
     delete api.defaults.headers.common.Authorization;
   };
 
+  // 🔹 Actualizar estado tras éxito (ej. 2FA)
+  const loginSuccess = (user, jwt) => {
+    setToken(jwt);
+    setUsuario(user);
+    localStorage.setItem("token", jwt);
+    localStorage.setItem("usuario", JSON.stringify(user));
+    api.defaults.headers.common.Authorization = `Bearer ${jwt}`;
+  };
+
   return (
     <AuthContext.Provider
-      value={{ usuario, token, loading, login, logout, register }}
+      value={{ usuario, token, loading, login, logout, register, loginSuccess }}
     >
       {children}
     </AuthContext.Provider>

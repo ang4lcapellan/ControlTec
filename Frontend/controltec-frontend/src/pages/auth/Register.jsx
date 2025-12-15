@@ -57,12 +57,8 @@ export default function Register() {
       await register(payload);
 
       setSuccess(
-        "Usuario registrado correctamente. En una siguiente versión se agregará la verificación por correo."
+        "Usuario registrado correctamente. Revisa tu correo y haz clic en el enlace de confirmación para activar tu cuenta."
       );
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
     } catch (err) {
       console.error(err);
       const msg =

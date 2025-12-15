@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+
 using System.Text;
 using QuestPDF.Infrastructure;
 using System.Text.Json.Serialization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,10 +49,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("FrontendPolicy", policy =>
     {
         policy
-            // Cambia estos origins por la URL de tu frontend
-            .WithOrigins("https://localhost:5173", "http://localhost:5173")
+            .WithOrigins("http://localhost:5173", "https://localhost:5173")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -89,21 +91,34 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<ICertificadoService, CertificadoService>();
 builder.Services.AddScoped<IComunicacionRechazoService, ComunicacionRechazoService>();
 
+// EmailService para confirmación de correo (Gmail SMTP)
+builder.Services.AddScoped<IEmailService>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var smtpSection = config.GetSection("Smtp");
+    return new EmailService(
+        smtpSection["Server"],
+        int.Parse(smtpSection["Port"]),
+        smtpSection["User"],
+        smtpSection["Pass"],
+        smtpSection["From"]
+    );
+});
+
+
 var app = builder.Build();
 
-// 7. MIDDLEWARE
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 
-// CORS antes de auth
-app.UseCors("FrontendPolicy");
+app.UseCors("FrontendPolicy"); // <-- PRIMERO
+
+//app.UseHttpsRedirection();     // <-- DESPUÉS
 
 app.UseAuthentication();
 app.UseAuthorization();

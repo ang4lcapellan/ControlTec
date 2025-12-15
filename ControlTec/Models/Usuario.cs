@@ -3,6 +3,10 @@ using System.Text.Json.Serialization;
 
 public class Usuario
 {
+    public string? EmailConfirmacionToken { get; set; }
+    public DateTime? EmailConfirmacionExpira { get; set; }
+    public bool EmailConfirmado { get; set; } = false;
+    public DateTime? FechaEmailConfirmado { get; set; }
     public int Id { get; set; }
 
     [Required]
@@ -22,6 +26,10 @@ public class Usuario
     public bool Activo { get; set; } = true;
 
     public bool EsInternoPendiente { get; set; } = false;
+
+    // Para login con código
+    public string? CodigoVerificacion { get; set; }
+    public DateTime? CodigoVerificacionExpira { get; set; }
 
     // 🔹 Nueva propiedad
     [Required]
