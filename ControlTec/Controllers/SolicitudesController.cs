@@ -25,17 +25,20 @@ namespace ControlTec.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly ICertificadoService _certificadoService;
         private readonly IComunicacionRechazoService _rechazoService;
+        private readonly IEmailService _emailService;
 
         public SolicitudesController(
             AppDbContext context,
             IWebHostEnvironment env,
             ICertificadoService certificadoService,
-            IComunicacionRechazoService rechazoService)
+            IComunicacionRechazoService rechazoService,
+            IEmailService emailService)
         {
             _context = context;
             _env = env;
             _certificadoService = certificadoService;
             _rechazoService = rechazoService;
+            _emailService = emailService;
         }
 
         // ==============================
@@ -513,6 +516,7 @@ namespace ControlTec.Controllers
         {
             var solicitud = await _context.Solicitudes
                 .Include(s => s.HistorialEstados)
+                .Include(s => s.Usuario) // Include Usuario to get email
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (solicitud == null)
@@ -649,6 +653,27 @@ namespace ControlTec.Controllers
                 }
 
                 _context.Notificaciones.Add(notificacion);
+
+                // ===============================================
+                // 🔹 ENVÍO DE CORREO ELECTRÓNICO
+                // ===============================================
+                if (solicitud.Usuario != null && !string.IsNullOrWhiteSpace(solicitud.Usuario.Correo))
+                {
+                    try
+                    {
+                        // Usamos el mismo título y mensaje de la notificación interna
+                        await _emailService.SendEmailAsync(
+                            solicitud.Usuario.Correo,
+                            notificacion.Titulo,
+                            notificacion.Mensaje
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        // Si falla el envío de correo, no detenemos el proceso, solo lo registramos o ignoramos
+                        Console.WriteLine($"Error enviando correo de notificación: {ex.Message}");
+                    }
+                }
             }
 
             await _context.SaveChangesAsync();

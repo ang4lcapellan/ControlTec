@@ -7,6 +7,7 @@ namespace ControlTec.Services
     public interface IEmailService
     {
         Task SendConfirmationEmail(string to, string link);
+        Task SendEmailAsync(string to, string subject, string body, bool isHtml = false);
     }
 
     public class EmailService : IEmailService
@@ -39,6 +40,24 @@ namespace ControlTec.Services
                 Credentials = new NetworkCredential(_smtpUser, _smtpPass),
                 EnableSsl = true
             };
+            await client.SendMailAsync(message);
+        }
+
+        public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
+        {
+            var message = new MailMessage(_from, to)
+            {
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = isHtml
+            };
+
+            using var client = new SmtpClient(_smtpServer, _smtpPort)
+            {
+                Credentials = new NetworkCredential(_smtpUser, _smtpPass),
+                EnableSsl = true
+            };
+
             await client.SendMailAsync(message);
         }
     }
