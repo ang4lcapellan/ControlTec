@@ -97,8 +97,8 @@ function FormularioDigitalDetalle({ solicitudId }) {
               respuestas[campo.nombre] !== undefined &&
               respuestas[campo.nombre] !== null &&
               respuestas[campo.nombre] !== ""
-            ? respuestas[campo.nombre]
-            : null;
+              ? respuestas[campo.nombre]
+              : null;
 
         return (
           <dl key={key} className="sd-kv">
@@ -779,7 +779,7 @@ export default function SolicitudDetalle() {
                   <div className="sd-actions-row">
                     {/* Botón verde para servicios con fases */}
                     {detalle.estado === "DepositadaFase2" &&
-                    (detalle.servicio?.id === 4 || detalle.servicio?.id === 5) ? (
+                      (detalle.servicio?.id === 4 || detalle.servicio?.id === 5) ? (
                       <button
                         type="button"
                         className="sd-btn sd-btn-primary"
@@ -823,7 +823,7 @@ export default function SolicitudDetalle() {
                       >
                         Aprobar y pasar a Validación Recepción
                       </button>
-                    ) : detalle.estado === "Depositada" && detalle.servicio?.id === 1 ? (
+                    ) : detalle.estado === "Depositada" && (detalle.servicio?.id === 1 || detalle.servicio?.id === 2 || detalle.servicio?.id === 3) ? (
                       <button
                         type="button"
                         className="sd-btn sd-btn-primary"
