@@ -9,4 +9,8 @@ public class Documento
     public string Ruta { get; set; } = null!;
     public int SolicitudId { get; set; }
     public Solicitud? Solicitud { get; set; } = null!;
+
+    // Individualización por requisito
+    public int? DocumentoRequeridoId { get; set; }
+    public DocumentoRequerido? DocumentoRequerido { get; set; }
 }

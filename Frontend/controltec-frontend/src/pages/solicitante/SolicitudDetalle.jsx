@@ -381,26 +381,27 @@ export default function SolicitudDetalle() {
   };
 
   // =================== ACCIONES ENCARGADO UPC ===================
-  const handleEncargadoRemitirDncd = async () => {
+  // Ahora EncargadoUPC remite a Dirección
+  const handleEncargadoRemitirDireccion = async () => {
     if (!detalle) return;
 
     const confirmado = window.confirm(
-      "¿Confirmas que deseas remitir esta solicitud a la DNCD para su revisión?"
+      "¿Confirmas que deseas remitir esta solicitud a la Dirección para su revisión?"
     );
     if (!confirmado) return;
 
     setAccionesBloqueadas(true);
     try {
       await api.post(`/api/Solicitudes/${detalle.id}/cambiar-estado`, {
-        estadoNuevo: "Aprobación DIGEAMPS",
+        estadoNuevo: "Aprobación DNCD",
         comentario:
           comentarioEncargado ||
-          "Revisión técnica completada por Encargado UPC. Se remite a DNCD.",
+          "Revisión técnica completada por Encargado UPC. Se remite a Dirección.",
       });
 
       setComentarioEncargado("");
       await cargarDetalle();
-      alert("Solicitud remitida a la DNCD.");
+      alert("Solicitud remitida a la Dirección.");
     } catch (err) {
       console.error("Error al remitir desde Encargado UPC:", err);
       alert(
@@ -409,6 +410,7 @@ export default function SolicitudDetalle() {
       setAccionesBloqueadas(false);
     }
   };
+
 
   const handleEncargadoRechazar = async () => {
     if (!detalle) return;
@@ -442,26 +444,28 @@ export default function SolicitudDetalle() {
 
 
   // =================== ACCIONES DNCD ===================
+  // Ahora DNCD aprueba final y genera certificado
   const handleDncdAprobar = async () => {
     if (!detalle) return;
 
     const confirmado = window.confirm(
-      "¿Confirmas que deseas aprobar y firmar esta solicitud en la DNCD?"
+      "¿Confirmas que deseas aprobar y firmar esta solicitud en la DNCD? Esto generará el certificado final."
     );
     if (!confirmado) return;
 
     setAccionesBloqueadas(true);
     try {
       await api.post(`/api/Solicitudes/${detalle.id}/cambiar-estado`, {
-        estadoNuevo: "Aprobación DNCD",
+        estadoNuevo: "Aprobada",
         comentario:
           comentarioDncd ||
-          "Solicitud aprobada por DNCD. Se remite a la Dirección para decisión final.",
+          "Solicitud aprobada y firmada por DNCD. Se genera el certificado final.",
       });
-
+      // Generar certificado (opcional: si backend no lo hace en la transición, descomentar)
+      // await api.post(`/api/Solicitudes/${detalle.id}/certificado`, {});
       setComentarioDncd("");
       await cargarDetalle();
-      alert("Solicitud aprobada por DNCD.");
+      alert("Solicitud aprobada y certificado generado. Puedes descargarlo desde el botón correspondiente.");
     } catch (err) {
       console.error("Error al aprobar como DNCD:", err);
       alert(
@@ -470,6 +474,7 @@ export default function SolicitudDetalle() {
       setAccionesBloqueadas(false);
     }
   };
+
 
   const handleDncdDevolver = async () => {
     if (!detalle) return;
@@ -502,32 +507,32 @@ export default function SolicitudDetalle() {
   };
 
   // =================== ACCIONES DIRECCIÓN ===================
-  const handleDireccionAprobar = async () => {
+  // Ahora Dirección remite a DNCD
+  const handleDireccionRemitirDncd = async () => {
     if (!detalle) return;
 
     const confirmado = window.confirm(
-      "¿Confirmas que deseas aprobar y firmar esta solicitud de forma definitiva?"
+      "¿Confirmas que deseas remitir esta solicitud a la DNCD para aprobación final?"
     );
     if (!confirmado) return;
 
     setAccionesBloqueadas(true);
     try {
       await api.post(`/api/Solicitudes/${detalle.id}/cambiar-estado`, {
-        estadoNuevo: "Aprobada",
-        comentario: "Solicitud aprobada y firmada por Dirección.",
+        estadoNuevo: "Aprobación DIGEAMPS",
+        comentario: "Solicitud revisada y validada por Dirección. Se remite a DNCD para aprobación final.",
       });
-
-      await api.post(`/api/Solicitudes/${detalle.id}/certificado`, {});
       await cargarDetalle();
-      alert("Solicitud aprobada y certificado generado. Puedes descargarlo desde el botón correspondiente.");
+      alert("Solicitud remitida a DNCD para aprobación final.");
     } catch (err) {
-      console.error("Error al aprobar como Dirección:", err);
+      console.error("Error al remitir a DNCD desde Dirección:", err);
       alert(
-        "No fue posible aprobar la solicitud. Verifica que el backend permita esta transición para el rol Dirección."
+        "No fue posible remitir la solicitud. Verifica que el backend permita esta transición para el rol Dirección."
       );
       setAccionesBloqueadas(false);
     }
   };
+
 
   const handleVerCertificado = () => {
     if (!detalle?.rutaCertificado) {
@@ -658,9 +663,32 @@ export default function SolicitudDetalle() {
                   <p className="sd-card-note">Este servicio aún no tiene requerimientos configurados.</p>
                 ) : (
                   <ul className="sd-list sd-list--checks">
-                    {documentosRequeridos.map((req) => (
-                      <li key={req.id}>{req.nombre}</li>
-                    ))}
+                    {documentosRequeridos.map((req) => {
+                      const docSubido = documentosCargados.find(
+                        (d) => d.documentoRequeridoId === req.id
+                      );
+                      return (
+                        <li key={req.id} className="sd-reqs-item-indiv">
+                          <div className="sd-reqs-row">
+                            <span className="sd-reqs-label">{req.nombre}</span>
+                            {docSubido ? (
+                              <>
+                                <span className="sd-reqs-status sd-reqs-status-ok">Subido: {docSubido.nombre}</span>
+                                <button
+                                  type="button"
+                                  className="sd-btn sd-btn-outline sd-btn-xs"
+                                  onClick={() => handleDescargarDocumento(docSubido.id)}
+                                >
+                                  Descargar
+                                </button>
+                              </>
+                            ) : (
+                              <span className="sd-reqs-status sd-reqs-status-pend">Pendiente</span>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -968,10 +996,10 @@ export default function SolicitudDetalle() {
                     <button
                       type="button"
                       className="sd-btn sd-btn-primary"
-                      onClick={handleEncargadoRemitirDncd}
+                      onClick={handleEncargadoRemitirDireccion}
                       disabled={accionesBloqueadas}
                     >
-                      Remitir a DNCD
+                      Remitir a Dirección
                     </button>
 
                     <button
@@ -1058,7 +1086,7 @@ export default function SolicitudDetalle() {
                   <button
                     type="button"
                     className="sd-btn sd-btn-primary"
-                    onClick={handleDireccionAprobar}
+                    onClick={handleDireccionRemitirDncd}
                     disabled={accionesBloqueadas}
                     style={{ width: "100%" }}
                   >

@@ -2,6 +2,130 @@
 import { useEffect, useState } from "react";
 import api from "../../api/apiClient";
 
+function CrearUsuarioModal({ open, onClose, onSuccess }) {
+  const [nombre, setNombre] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [password, setPassword] = useState("");
+  const [rol, setRol] = useState("Solicitante");
+  const [activo, setActivo] = useState(true);
+  const [cedula, setCedula] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Limpiar formulario cada vez que se abre/cierra el modal
+  useEffect(() => {
+    if (open) {
+      setNombre("");
+      setCorreo("");
+      setPassword("");
+      setRol("Solicitante");
+      setActivo(true);
+      setCedula("");
+      setError("");
+      setSuccessMsg("");
+      setLoading(false);
+    }
+  }, [open]);
+
+  const normalizarCedula = (v = "") => v.replace(/[^0-9]/g, "").slice(0, 11);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!nombre.trim() || !correo.trim() || !password.trim() || !rol.trim()) {
+      setError("Todos los campos obligatorios deben estar completos.");
+      return;
+    }
+    if (cedula && normalizarCedula(cedula).length !== 11) {
+      setError("La cédula debe tener 11 dígitos.");
+      return;
+    }
+    try {
+      setLoading(true);
+      await api.post("/api/admin/usuarios", {
+        nombre,
+        correo,
+        password,
+        roll: rol,
+        activo,
+        cedula: cedula ? normalizarCedula(cedula) : null,
+      });
+      setSuccessMsg("Usuario creado correctamente.");
+      setTimeout(() => {
+        setSuccessMsg("");
+        onSuccess && onSuccess();
+        onClose && onClose();
+      }, 1200);
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        // Si ocurre 401, simplemente cerrar el modal y sugerir recargar sesión, pero no mostrarlo como error de negocio
+        onClose && onClose();
+        // Opcional: window.location.reload();
+      } else if (typeof err?.response?.data === "string") {
+        setError(err.response.data);
+      } else if (err?.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Error al crear usuario.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  if (!open) return null;
+  return (
+    <div className="ct-modal-overlay">
+      <div className="ct-modal">
+        <h2>Crear usuario</h2>
+        {error && <div className="ct-error">{error}</div>}
+        <form onSubmit={handleSubmit} className="ct-col">
+          <div className="form-group">
+            <label>Nombre completo</label>
+            <input value={nombre} onChange={e => setNombre(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label>Correo electrónico</label>
+            <input type="email" value={correo} onChange={e => setCorreo(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label>Cédula (opcional / 11 dígitos)</label>
+            <input value={cedula} onChange={e => setCedula(normalizarCedula(e.target.value))} />
+          </div>
+          <div className="form-group">
+            <label>Rol / Perfil</label>
+            <select value={rol} onChange={e => setRol(e.target.value)}>
+              {ROLES_POSIBLES.map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Contraseña</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="checkbox-label" style={{ display: "flex", gap: ".5rem" }}>
+              <input type="checkbox" checked={activo} onChange={e => setActivo(e.target.checked)} />
+              <span>Usuario activo</span>
+            </label>
+          </div>
+          <div className="ct-row ct-gap-2">
+            <button type="submit" className="ct-btn ct-btn-primary" disabled={loading}>
+              {loading ? "Creando..." : "Crear usuario"}
+            </button>
+            <button type="button" className="ct-btn ct-btn-outline" onClick={onClose} disabled={loading}>
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+      <style>{`.ct-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.13);z-index:99;display:flex;align-items:center;justify-content:center;}`}</style>
+      <style>{`.ct-modal{background:#fff;padding:2rem 2.5rem;border-radius:1rem;box-shadow:0 2px 16px #0001;min-width:350px;max-width:95vw;}`}</style>
+    </div>
+  );
+}
+
 const ROLES_POSIBLES = [
   "Solicitante",
   "VUS",
@@ -13,6 +137,7 @@ const ROLES_POSIBLES = [
 ];
 
 export default function AdminUsuarios() {
+  const [modalCrear, setModalCrear] = useState(false);
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -168,6 +293,11 @@ export default function AdminUsuarios() {
 
   return (
     <div className="ct-app">
+      <CrearUsuarioModal
+        open={modalCrear}
+        onClose={() => setModalCrear(false)}
+        onSuccess={cargarUsuarios}
+      />
       <div className="ct-page-container">
         <header className="ct-header">
           <div className="ct-title-group">
@@ -292,8 +422,15 @@ export default function AdminUsuarios() {
           <section className="ct-card">
             <div className="ct-row-between ct-mb-4 ct-wrap">
               <h2 style={{ margin: 0 }}>Usuarios registrados</h2>
-
               <div className="ct-row ct-gap-2 ct-wrap">
+                <button
+                  type="button"
+                  className="ct-btn ct-btn-primary"
+                  onClick={() => setModalCrear(true)}
+                  style={{ fontWeight: 500 }}
+                >
+                  Crear usuario
+                </button>
                 <input
                   type="text"
                   placeholder="Buscar por cédula"

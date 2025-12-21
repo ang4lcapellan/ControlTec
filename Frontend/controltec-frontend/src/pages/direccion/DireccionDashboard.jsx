@@ -88,11 +88,7 @@ export default function DireccionDashboard() {
           <div className="ct-title-group">
             <h1 className="ct-title">Bandeja Dirección</h1>
             <p className="ct-subtitle">
-              Aquí revisas las solicitudes aprobadas por DNCD (
-              <strong>{ESTADO_APROBACION_DNCD}</strong>) para emitir certificado o
-              tomar decisión final, y las solicitudes en{" "}
-              <strong>{ESTADO_RECHAZADA_ET}</strong> para generar la comunicación
-              de rechazo.
+              Aquí revisas las solicitudes remitidas por Encargado UPC (Aprobación DNCD) para revisar y remitir a la DNCD para aprobación final, y las solicitudes en RechazadaET para generar la comunicación de rechazo.
             </p>
           </div>
         </header>

@@ -49,6 +49,14 @@ namespace ControlTec.Controllers
             if (usuarioDb == null)
                 return NotFound();
 
+            // Validar cédula duplicada (distinto usuario)
+            if (!string.IsNullOrWhiteSpace(usuario.Cedula))
+            {
+                var cedulaExiste = await _context.Usuarios.AnyAsync(u => u.Cedula == usuario.Cedula && u.Id != usuario.Id);
+                if (cedulaExiste)
+                    return BadRequest("Ya existe un usuario con esa cédula.");
+            }
+
             usuarioDb.Nombre = usuario.Nombre;
             usuarioDb.Correo = usuario.Correo;
             usuarioDb.Roll = usuario.Roll;

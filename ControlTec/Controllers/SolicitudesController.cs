@@ -553,26 +553,38 @@ namespace ControlTec.Controllers
                 new TransicionRol { Rol = "TecnicoUPC", Desde = EstadosSolicitud.ValidacionRecepcion, Hacia = EstadosSolicitud.RechazadaET },
 
                 // Encargado UPC
-                new TransicionRol { Rol = "EncargadoUPC", Desde = EstadosSolicitud.EvaluacionTecnica, Hacia = EstadosSolicitud.AprobacionDIGEAMPS },
+                new TransicionRol { Rol = "EncargadoUPC", Desde = EstadosSolicitud.EvaluacionTecnica, Hacia = EstadosSolicitud.AprobacionDNCD }, // Cambia: ahora pasa a Direccion
                 new TransicionRol { Rol = "EncargadoUPC", Desde = EstadosSolicitud.EvaluacionTecnica, Hacia = EstadosSolicitud.Devuelta },
                 new TransicionRol { Rol = "EncargadoUPC", Desde = EstadosSolicitud.EvaluacionTecnica, Hacia = EstadosSolicitud.RechazadaET },
 
-                // DNCD
-                new TransicionRol { Rol = "DNCD", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.AprobacionDNCD },
-                new TransicionRol { Rol = "DNCD", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Devuelta },
-                new TransicionRol { Rol = "DNCD", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Rechazada },
-
-                // Dirección
-                new TransicionRol { Rol = "Direccion", Desde = EstadosSolicitud.AprobacionDNCD, Hacia = EstadosSolicitud.Aprobada },
+                // Dirección (ahora intermedia)
+                new TransicionRol { Rol = "Direccion", Desde = EstadosSolicitud.AprobacionDNCD, Hacia = EstadosSolicitud.AprobacionDIGEAMPS }, // Cambia: ahora pasa a DNCD
                 new TransicionRol { Rol = "Direccion", Desde = EstadosSolicitud.AprobacionDNCD, Hacia = EstadosSolicitud.Devuelta },
                 new TransicionRol { Rol = "Direccion", Desde = EstadosSolicitud.AprobacionDNCD, Hacia = EstadosSolicitud.Rechazada },
 
+                // DNCD (final)
+                new TransicionRol { Rol = "DNCD", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Aprobada }, // Cambia: DNCD aprueba final
+                new TransicionRol { Rol = "DNCD", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Devuelta },
+                new TransicionRol { Rol = "DNCD", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Rechazada },
+
                 // Admin
-                new TransicionRol { Rol = "Admin", Desde = EstadosSolicitud.AprobacionDNCD, Hacia = EstadosSolicitud.Aprobada },
-                new TransicionRol { Rol = "Admin", Desde = EstadosSolicitud.AprobacionDNCD, Hacia = EstadosSolicitud.Devuelta },
-                new TransicionRol { Rol = "Admin", Desde = EstadosSolicitud.AprobacionDNCD, Hacia = EstadosSolicitud.Rechazada },
+                new TransicionRol { Rol = "Admin", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Aprobada },
+                new TransicionRol { Rol = "Admin", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Devuelta },
+                new TransicionRol { Rol = "Admin", Desde = EstadosSolicitud.AprobacionDIGEAMPS, Hacia = EstadosSolicitud.Rechazada },
                 new TransicionRol { Rol = "Admin", Desde = EstadosSolicitud.Aprobada, Hacia = EstadosSolicitud.Entregada },
             };
+
+            // Lógica para generación de certificado: si DNCD aprueba, generar certificado
+            if (string.Equals(rolUsuario, "DNCD", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(estadoAnterior, EstadosSolicitud.AprobacionDIGEAMPS, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(estadoNuevo, EstadosSolicitud.Aprobada, StringComparison.OrdinalIgnoreCase))
+            {
+                // Generar certificado automáticamente
+                var ruta = await _certificadoService.GenerarCertificadoAsync(solicitud.Id);
+                solicitud.RutaCertificado = ruta;
+                // Notificar al usuario (ya cubierto por notificaciones más abajo)
+            }
+
 
             bool esAdmin = string.Equals(rolUsuario, "Admin", StringComparison.OrdinalIgnoreCase);
             bool transicionPermitida;
@@ -702,10 +714,14 @@ namespace ControlTec.Controllers
         // ============================
         // 8. SUBIR DOCUMENTO
         // ============================
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("{id}/documentos")]
         [Consumes("multipart/form-data")]
         [Authorize(Roles = "Usuario,Solicitante,Admin")]
-        public async Task<ActionResult<Documento>> SubirDocumento(int id, IFormFile archivo)
+        public async Task<ActionResult<Documento>> SubirDocumento(
+            int id,
+            [FromForm] IFormFile archivo,
+            [FromForm] int documentoRequeridoId)
         {
             if (archivo == null || archivo.Length == 0)
                 return BadRequest("Debe seleccionar un archivo.");
@@ -717,6 +733,19 @@ namespace ControlTec.Controllers
             var currentUserId = GetUserIdFromToken();
             if (!User.IsInRole("Admin") && solicitud.UsuarioId != currentUserId)
                 return Forbid();
+
+            // Validar que el DocumentoRequerido corresponde al Servicio de la Solicitud
+            var docReq = await _context.DocumentosRequeridos.FindAsync(documentoRequeridoId);
+            if (docReq == null || docReq.ServicioId != solicitud.ServicioId)
+                return BadRequest("El documento requerido no corresponde a este servicio.");
+
+            // Solo 1 documento por requisito por solicitud (reemplaza si existe)
+            var docExistente = await _context.Documentos.FirstOrDefaultAsync(d => d.SolicitudId == id && d.DocumentoRequeridoId == documentoRequeridoId);
+            if (docExistente != null)
+            {
+                _context.Documentos.Remove(docExistente);
+                // (Opcional: borrar archivo físico si lo deseas)
+            }
 
             var webRoot = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             var uploadsPath = Path.Combine(webRoot, "uploads", "solicitudes", id.ToString());
@@ -737,7 +766,8 @@ namespace ControlTec.Controllers
                 Nombre = archivo.FileName,
                 Tipo = archivo.ContentType,
                 Ruta = $"/uploads/solicitudes/{id}/{safeFileName}",
-                SolicitudId = id
+                SolicitudId = id,
+                DocumentoRequeridoId = documentoRequeridoId
             };
 
             _context.Documentos.Add(documento);
@@ -846,7 +876,7 @@ namespace ControlTec.Controllers
         // 10. GENERAR CERTIFICADO
         // ======================================
         [HttpPost("{id}/certificado")]
-        [Authorize(Roles = "Direccion,Admin")]
+        [Authorize(Roles = "DNCD,Admin")]
         public async Task<ActionResult<object>> GenerarCertificado(int id)
         {
             var solicitud = await _context.Solicitudes

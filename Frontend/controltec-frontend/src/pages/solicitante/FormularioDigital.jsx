@@ -17,7 +17,8 @@ export default function FormularioDigital() {
   const [valores, setValores] = useState({});
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [archivos, setArchivos] = useState([]);
+  // Map: { [documentoRequeridoId]: File|null }
+  const [archivos, setArchivos] = useState({});
 
   useEffect(() => {
     const cargarFormulario = async () => {
@@ -80,11 +81,14 @@ export default function FormularioDigital() {
         respuestasJson: JSON.stringify(valores || {}),
       });
 
-      // 3) Subir archivos adjuntos (opcional)
-      for (const file of archivos) {
+      // 3) Subir archivos adjuntos por requisito
+      for (const doc of documentosRequeridos) {
+        const docId = doc.id ?? doc.Id;
+        const file = archivos[docId];
+        if (!file) continue;
         const formData = new FormData();
         formData.append("archivo", file);
-
+        formData.append("documentoRequeridoId", docId);
         await api.post(`/api/Solicitudes/${solicitudId}/documentos`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -212,160 +216,150 @@ export default function FormularioDigital() {
                   <span className="fd-badge">ID {subservicioId}</span>
                 </div>
 
-                {campos.length > 0 ? (
-                  <form onSubmit={handleSubmit} className="fd-form">
-                    <div className="fd-form-grid">
-                      {campos.map((campo, idx) => (
-                        <div key={campo.nombre || idx} className="form-group fd-field">
-                          <label>
-                            {campo.etiqueta || campo.nombre}
-                            {campo.requerido && (
-                              <span style={{ color: "#ef4444" }}> *</span>
-                            )}
-                          </label>
+              {campos.length > 0 ? (
+                <form onSubmit={handleSubmit} className="fd-form">
+                  <div className="fd-form-grid">
+                    {campos.map((campo, idx) => (
+                      <div key={campo.nombre || idx} className="form-group fd-field">
+                        <label>
+                          {campo.etiqueta || campo.nombre}
+                          {campo.requerido && (
+                            <span style={{ color: "#ef4444" }}> *</span>
+                          )}
+                        </label>
 
-                          {campo.tipo === "texto" && (
+                        {campo.tipo === "texto" && (
+                          <input
+                            type="text"
+                            value={valores[campo.nombre] || ""}
+                            onChange={(e) =>
+                              handleChange(campo.nombre, e.target.value)
+                            }
+                            required={campo.requerido}
+                          />
+                        )}
+
+                        {campo.tipo === "checkbox" && (
+                          <div className="fd-checkbox">
                             <input
-                              type="text"
+                              type="checkbox"
+                              checked={!!valores[campo.nombre]}
+                              onChange={(e) =>
+                                handleChange(campo.nombre, e.target.checked)
+                              }
+                            />
+                            <span>
+                              {campo.etiqueta || campo.nombre}
+                              {campo.requerido && (
+                                <span style={{ color: "#ef4444" }}> *</span>
+                              )}
+                            </span>
+                          </div>
+                        )}
+
+                        {campo.tipo === "seleccion" &&
+                          Array.isArray(campo.opciones) && (
+                            <select
                               value={valores[campo.nombre] || ""}
                               onChange={(e) =>
                                 handleChange(campo.nombre, e.target.value)
                               }
                               required={campo.requerido}
-                            />
+                            >
+                              <option value="">Seleccione una opción</option>
+                              {campo.opciones.map((op, i) => (
+                                <option key={i} value={op}>
+                                  {op}
+                                </option>
+                              ))}
+                            </select>
                           )}
-
-                          {campo.tipo === "checkbox" && (
-                            <div className="fd-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={!!valores[campo.nombre]}
-                                onChange={(e) =>
-                                  handleChange(campo.nombre, e.target.checked)
-                                }
-                              />
-                              <span>
-                                {campo.etiqueta || campo.nombre}
-                                {campo.requerido && (
-                                  <span style={{ color: "#ef4444" }}> *</span>
-                                )}
-                              </span>
-                            </div>
-                          )}
-
-                          {campo.tipo === "seleccion" &&
-                            Array.isArray(campo.opciones) && (
-                              <select
-                                value={valores[campo.nombre] || ""}
-                                onChange={(e) =>
-                                  handleChange(campo.nombre, e.target.value)
-                                }
-                                required={campo.requerido}
-                              >
-                                <option value="">Seleccione una opción</option>
-                                {campo.opciones.map((op, i) => (
-                                  <option key={i} value={op}>
-                                    {op}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Upload de archivos (opcional) */}
-                    <div className="fd-upload">
-                      <label className="fd-reqs-title">
-                        Adjuntar archivos (opcional)
-                      </label>
-
-                      <input
-                        id="fd-file-input"
-                        className="fd-file-input"
-                        type="file"
-                        multiple
-                        onChange={(e) => setArchivos(Array.from(e.target.files))}
-                      />
-
-                      <label htmlFor="fd-file-input" className="fd-dropzone">
-                        <p className="fd-dropzone-title">
-                          Arrastra aquí o haz clic para seleccionar archivos
-                        </p>
-                        <p className="fd-dropzone-sub">
-                          Puedes adjuntar varios documentos.
-                        </p>
-
-                        {archivos.length > 0 && (
-                          <ul className="fd-file-list">
-                            {archivos.map((file, idx) => (
-                              <li key={idx} className="fd-file-item">
-                                <span className="fd-file-name">{file.name}</span>
-                                <button
-                                  type="button"
-                                  className="fd-file-remove"
-                                  aria-label="Eliminar archivo"
-                                  onClick={() =>
-                                    setArchivos((prev) =>
-                                      prev.filter((_, i) => i !== idx)
-                                    )
-                                  }
-                                >
-                                  ×
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </label>
-                    </div>
-
-                    <div className="fd-actions">
-                      <button
-                        type="submit"
-                        className="btn-primary"
-                        disabled={enviando}
-                      >
-                        {enviando ? "Enviando..." : "Enviar formulario"}
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="fd-card-body">
-                    <p>Este formulario no tiene campos configurados.</p>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </section>
-            </main>
-
-            {/* SIDE */}
-            <aside className="fd-side">
-              <section className="fd-card">
-                <div className="fd-card-head">
-                  <h3 className="fd-card-title">Requisitos</h3>
-                </div>
-
-                <div className="fd-card-body">
-                  <h4 className="fd-reqs-title">{servicioNombre}</h4>
-
-                  {documentosRequeridos?.length > 0 ? (
+                  {/* Documentos requeridos con input por requisito */}
+                  <div className="fd-upload">
+                    <label className="fd-reqs-title">Documentos requeridos</label>
                     <ul className="fd-reqs-list">
-                      {documentosRequeridos.map((doc, idx) => (
-                        <li key={doc.id ?? doc.Id ?? idx}>
-                          {doc.nombre ?? doc.Nombre}
-                        </li>
-                      ))}
+                      {documentosRequeridos.map((doc, idx) => {
+                        const docId = doc.id ?? doc.Id;
+                        const archivo = archivos[docId] || null;
+                        return (
+                          <li key={docId} className="fd-reqs-item-indiv" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span className="fd-reqs-label">{doc.nombre ?? doc.Nombre}</span>
+                            <input
+                              type="file"
+                              accept="application/pdf,image/*"
+                              style={{ marginLeft: 8 }}
+                              onChange={e => {
+                                const file = e.target.files?.[0] || null;
+                                setArchivos(prev => ({ ...prev, [docId]: file }));
+                              }}
+                            />
+                            {archivo ? (
+                              <span className="fd-reqs-status fd-reqs-status-ok">Subido: {archivo.name}</span>
+                            ) : (
+                              <span className="fd-reqs-status fd-reqs-status-pend">Pendiente</span>
+                            )}
+                            {archivo && (
+                              <button
+                                type="button"
+                                className="fd-btn fd-btn-xs fd-btn-danger"
+                                onClick={() => setArchivos(prev => { const cp = { ...prev }; delete cp[docId]; return cp; })}
+                                style={{ marginLeft: 4 }}
+                              >
+                                Quitar
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
-                  ) : (
-                    <p className="fd-reqs-empty">
-                      No hay requisitos adicionales para este servicio.
-                    </p>
-                  )}
+                  </div>
+                  <div className="fd-actions">
+                    <button
+                      type="submit"
+                      className="btn-primary"
+                      disabled={enviando}
+                    >
+                      {enviando ? "Enviando..." : "Enviar formulario"}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="fd-card-body">
+                  <p>Este formulario no tiene campos configurados.</p>
                 </div>
-              </section>
-            </aside>
-          </div>
-        )}
+              )}
+            </section>
+          </main>
+          {/* SIDE */}
+          <aside className="fd-side">
+            <section className="fd-card">
+              <div className="fd-card-head">
+                <h3 className="fd-card-title">Requisitos</h3>
+              </div>
+              <div className="fd-card-body">
+                <h4 className="fd-reqs-title">{servicioNombre}</h4>
+                {documentosRequeridos?.length > 0 ? (
+                  <ul className="fd-reqs-list">
+                    {documentosRequeridos.map((doc, idx) => (
+                      <li key={doc.id ?? doc.Id ?? idx}>
+                        {doc.nombre ?? doc.Nombre}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="fd-reqs-empty">
+                    No hay requisitos adicionales para este servicio.
+                  </p>
+                )}
+              </div>
+            </section>
+          </aside>
+        </div>
+      )}
+
       </div>
     </div>
   );

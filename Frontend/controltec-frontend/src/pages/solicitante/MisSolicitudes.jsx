@@ -134,6 +134,20 @@ export default function MisSolicitudes() {
                     >
                       Ver
                     </button>
+                    {s.estado && s.estado.toLowerCase().includes("aprob") && s.rutaCertificado && (
+                      <button
+                        type="button"
+                        className="ms-btn-action"
+                        style={{ marginLeft: 8 }}
+                        title="Imprimir certificado"
+                        onClick={() => {
+                          const base = api.defaults.baseURL || "";
+                          window.open(`${base}${s.rutaCertificado}`, "_blank");
+                        }}
+                      >
+                        Imprimir
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

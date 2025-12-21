@@ -15,7 +15,7 @@ export default function DncdDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const ESTADO_OBJETIVO = "Aprobación DIGEAMPS";
+  const ESTADO_OBJETIVO = "Aprobación DIGEAMPS"; // Ahora DNCD es la última instancia y aprueba/genera certificado
 
   useEffect(() => {
     const cargarSolicitudes = async () => {

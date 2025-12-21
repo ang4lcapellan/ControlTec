@@ -13,7 +13,28 @@ export default function NuevaSolicitud() {
   const [error, setError] = useState("");
 
   const [expandedId, setExpandedId] = useState(null);
+  // Map: { [servicioId]: { [documentoRequeridoId]: File|null } }
   const [filesByService, setFilesByService] = useState({});
+
+  // Manejar archivo individual por requisito
+  const handleFileChange = (servicioId, docReqId, file) => {
+    setFilesByService((prev) => ({
+      ...prev,
+      [servicioId]: {
+        ...(prev[servicioId] || {}),
+        [docReqId]: file,
+      },
+    }));
+  };
+
+  const handleRemoveFile = (servicioId, docReqId) => {
+    setFilesByService((prev) => {
+      const copy = { ...(prev[servicioId] || {}) };
+      delete copy[docReqId];
+      return { ...prev, [servicioId]: copy };
+    });
+  };
+
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -118,52 +139,49 @@ export default function NuevaSolicitud() {
   // ================== GUARDAR EN BD ==================
 
   const handleSubirDocumentos = async (servicio) => {
-    const files = filesByService[servicio.id] || [];
-
-    if (files.length === 0) {
-      alert("Debes adjuntar al menos un documento.");
+    const filesMap = filesByService[servicio.id] || {};
+    const docsRequeridos = getDocsRequeridos(servicio);
+    const faltantes = docsRequeridos.filter(doc => !filesMap[doc.id ?? doc.Id]);
+    if (faltantes.length > 0) {
+      alert("Debes adjuntar todos los documentos requeridos.");
       return;
     }
 
     const confirmado = window.confirm(
-      `¿Confirmas enviar la solicitud para "${servicio.nombre}" con ${files.length} documento(s)?`
+      `¿Confirmas enviar la solicitud para "${servicio.nombre}" con todos los documentos requeridos?`
     );
-
     if (!confirmado || submitting) return;
 
     try {
       setSubmitting(true);
-
-      // 1) Crear la solicitud con estado PENDIENTE (el backend lo maneja)
+      // 1) Crear la solicitud con estado PENDIENTE
       const iniciarRes = await api.post("/api/Solicitudes/iniciar", {
         servicioId: servicio.id,
       });
-
       const solicitudId =
         iniciarRes.data.id ?? iniciarRes.data.Id ?? iniciarRes.data.solicitudId;
-
       if (!solicitudId) {
         throw new Error("No se pudo obtener el Id de la solicitud creada.");
       }
-
-      // 2) Subir cada documento a /api/Solicitudes/{id}/documentos
-      for (const file of files) {
+      // 2) Subir cada documento individualmente
+      for (const doc of docsRequeridos) {
+        const docId = doc.id ?? doc.Id;
+        const file = filesMap[docId];
+        if (!file) continue;
         const formData = new FormData();
         formData.append("archivo", file);
-
+        formData.append("documentoRequeridoId", docId);
         await api.post(`/api/Solicitudes/${solicitudId}/documentos`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-
-      // 3) 🚀 AHORA SÍ marcamos la solicitud como enviada/depositada
+      // 3) Marcar la solicitud como enviada
       await api.post(`/api/Solicitudes/${solicitudId}/enviar`, {
         comentario: "Solicitud enviada desde el portal de ControlTec.",
       });
-
-      // 4) Redirigir a Mis solicitudes con mensaje de éxito
+      // 4) Redirigir
       navigate("/mis-solicitudes", {
         state: {
           successMessage: `Tu solicitud para "${servicio.nombre}" fue enviada correctamente.`,
@@ -171,8 +189,6 @@ export default function NuevaSolicitud() {
       });
     } catch (err) {
       console.error("Error al enviar solicitud:", err);
-      console.error("Status:", err.response?.status);
-      console.error("Respuesta del backend:", err.response?.data);
       alert(
         "Ocurrió un error al guardar la solicitud o subir los documentos. Inténtalo de nuevo."
       );
@@ -252,18 +268,18 @@ export default function NuevaSolicitud() {
                   <h3 className="ns-reqs-title">REQUERIMIENTOS</h3>
 
                   {docsRequeridos.length === 0 ? (
-                    <p className="ns-reqs-empty">
-                      Este servicio aún no tiene requerimientos configurados.
-                    </p>
-                  ) : (
-                    <ul className="ns-reqs-list">
-                      {docsRequeridos.map((doc) => (
-                        <li key={doc.id ?? doc.Id}>
-                          {doc.nombre ?? doc.Nombre}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+  <p className="ns-reqs-empty">
+    Este servicio aún no tiene requerimientos configurados.
+  </p>
+) : (
+  <ul className="ns-reqs-list">
+    {docsRequeridos.map((doc) => (
+      <li key={doc.id ?? doc.Id} className="ns-reqs-item-indiv">
+        <span className="ns-reqs-label">{doc.nombre ?? doc.Nombre}</span>
+      </li>
+    ))}
+  </ul>
+)}
                 </div>
 
                 {/* Acciones (abajo, 2 botones) */}
