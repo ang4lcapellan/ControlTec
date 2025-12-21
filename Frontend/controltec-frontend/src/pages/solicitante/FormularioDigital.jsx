@@ -280,41 +280,44 @@ export default function FormularioDigital() {
                   {/* Documentos requeridos con input por requisito */}
                   <div className="fd-upload">
                     <label className="fd-reqs-title">Documentos requeridos</label>
-                    <ul className="fd-reqs-list">
+                    <div className="fd-reqs-cards">
                       {documentosRequeridos.map((doc, idx) => {
                         const docId = doc.id ?? doc.Id;
                         const archivo = archivos[docId] || null;
                         return (
-                          <li key={docId} className="fd-reqs-item-indiv" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span className="fd-reqs-label">{doc.nombre ?? doc.Nombre}</span>
-                            <input
-                              type="file"
-                              accept="application/pdf,image/*"
-                              style={{ marginLeft: 8 }}
-                              onChange={e => {
-                                const file = e.target.files?.[0] || null;
-                                setArchivos(prev => ({ ...prev, [docId]: file }));
-                              }}
-                            />
-                            {archivo ? (
-                              <span className="fd-reqs-status fd-reqs-status-ok">Subido: {archivo.name}</span>
-                            ) : (
-                              <span className="fd-reqs-status fd-reqs-status-pend">Pendiente</span>
-                            )}
+                          <div key={docId} className="fd-req-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, border: '1px solid #e5e7eb', marginBottom: 12, background: '#fafbfc' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span className="fd-reqs-label" style={{ fontWeight: 600 }}>{doc.nombre ?? doc.Nombre}</span>
+                              <label className="fd-file-label" style={{ marginLeft: 16, cursor: 'pointer' }}>
+                                <input
+                                  type="file"
+                                  accept="application/pdf,image/*"
+                                  style={{ display: 'none' }}
+                                  onChange={e => {
+                                    const file = e.target.files?.[0] || null;
+                                    setArchivos(prev => ({ ...prev, [docId]: file }));
+                                  }}
+                                />
+                                <span className="fd-file-btn">{archivo ? 'Cambiar archivo' : 'Seleccionar archivo'}</span>
+                              </label>
+                              <span style={{ marginLeft: 12 }} className={archivo ? 'fd-badge fd-badge-ok' : 'fd-badge fd-badge-pend'}>
+                                {archivo ? `Subido: ${archivo.name}` : 'Pendiente'}
+                              </span>
+                            </div>
                             {archivo && (
                               <button
                                 type="button"
                                 className="fd-btn fd-btn-xs fd-btn-danger"
+                                style={{ marginLeft: 16, minWidth: 70 }}
                                 onClick={() => setArchivos(prev => { const cp = { ...prev }; delete cp[docId]; return cp; })}
-                                style={{ marginLeft: 4 }}
                               >
                                 Quitar
                               </button>
                             )}
-                          </li>
+                          </div>
                         );
                       })}
-                    </ul>
+                    </div>
                   </div>
                   <div className="fd-actions">
                     <button

@@ -573,6 +573,10 @@ export default function SolicitudDetalle() {
   const documentosRequeridos = detalle.documentosRequeridos || [];
   const historial = detalle.historial || [];
 
+  // DEBUG: Mostrar datos en consola
+  console.log('DEBUG documentosCargados', documentosCargados);
+  console.log('DEBUG documentosRequeridos', documentosRequeridos);
+
   let backPath = "/login";
   if (esSolicitante) backPath = "/mis-solicitudes";
   else if (esVus) backPath = "/vus/solicitudes";
@@ -751,21 +755,32 @@ export default function SolicitudDetalle() {
                   <p className="sd-card-note">Todavía no se han cargado documentos para esta solicitud.</p>
                 ) : (
                   <div className="sd-docs">
-                    {documentosCargados.map((doc) => (
-                      <div key={doc.id} className="sd-doc-row">
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div className="sd-doc-name">{doc.nombre}</div>
-                          <div className="sd-doc-meta">{doc.tipo || "application/pdf"}</div>
-                        </div>
-                        <button
-                          type="button"
-                          className="sd-btn sd-btn-outline"
-                          onClick={() => handleDescargarDocumento(doc.id)}
-                        >
-                          Descargar
-                        </button>
-                      </div>
-                    ))}
+                    {documentosCargados.length === documentosRequeridos.length ? (
+  documentosRequeridos.map((req, idx) => {
+    const doc = documentosCargados[idx];
+    if (!doc) return null;
+    return (
+      <div key={req.id} className="fd-req-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, border: '1px solid #e5e7eb', marginBottom: 12, background: '#fafbfc' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span className="fd-reqs-label" style={{ fontWeight: 600 }}>{req.nombre}</span>
+          <span className="fd-badge fd-badge-ok" style={{ marginLeft: 16 }}>
+            Subido: {doc.nombre}
+          </span>
+        </div>
+        <button
+          type="button"
+          className="fd-btn fd-btn-xs fd-btn-primary"
+          style={{ marginLeft: 16, minWidth: 70 }}
+          onClick={() => handleDescargarDocumento(doc.id)}
+        >
+          Descargar
+        </button>
+      </div>
+    );
+  })
+) : (
+  <p className="sd-card-note">Todavía no se han cargado documentos para esta solicitud.</p>
+)}
                   </div>
                 )}
               </div>
