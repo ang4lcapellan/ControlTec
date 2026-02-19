@@ -3,7 +3,6 @@
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![Frontend](https://img.shields.io/badge/Frontend-React-61DAFB)
 ![Language](https://img.shields.io/badge/Language-C%23-blue)
-![Architecture](https://img.shields.io/badge/Architecture-MVC%20%2B%20API-green)
 ![Database](https://img.shields.io/badge/Database-SQL%20Server-red)
 
 > Sistema web para la digitalización del flujo de solicitudes, evaluación y emisión de certificados y permisos de productos controlados.
